@@ -463,4 +463,4 @@ catch (err) {
 }
 
 // Export
-module.exports = { client: client, createProfile: createProfile }
+module.exports = { client: client, createProfile: createProfile };
