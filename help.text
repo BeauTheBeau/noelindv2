@@ -1,0 +1,17 @@
+
+# Help
+
+## /character
+> Manage your characters
+
+### /character create `<name>`
+> Create a new character
+
+### /character delete `<name>`
+> Delete a character
+
+### /character list
+> List your characters
+
+### /character select `<name>`
+> Selects your active character

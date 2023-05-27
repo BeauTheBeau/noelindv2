@@ -1,0 +1,139 @@
+{
+  "damage_ranges": {
+    "level_1": {
+      "min": 1,
+      "max": 9
+    },
+    "level_2": {
+      "min": 5,
+      "max": 11
+    },
+    "level_3": {
+      "min": 9,
+      "max": 13
+    },
+    "level_4": {
+      "min": 13,
+      "max": 17
+    },
+    "level_5": {
+      "min": 17,
+      "max": 21
+    }
+  },
+  "rank_1": [
+    {
+      "short": "basic_bite",
+      "name": "Basic Bite",
+      "possible_injuries": [
+        "Minor bite wound",
+        "Infection from bite"
+      ],
+      "action_text": [
+        "<opponent> was bitten with viciously sharp fangs by <self>, dealing <damage> damage!",
+        "<self> bit <opponent> with viciously sharp fangs, dealing <damage> damage!",
+        "<opponent> was bitten with viciously sharp fangs by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> with viciously sharp fangs, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> tried to bite <opponent>, but missed!",
+        "<self> tried to bite <opponent>, but missed and fell over!",
+        "<opponent> dodged <self>'s bite, causing <self> to fall over!"
+      ],
+      "damage_level": 1,
+      "success_rate": 3
+    },
+    {
+      "short": "basic_claw",
+      "name": "Basic Claw",
+      "possible_injuries": [
+        "Minor scratch",
+        "Infection from scratch"
+      ],
+      "action_text": [
+        "<opponent> was scratched by <self>, dealing <damage> damage!",
+        "<self> scratched <opponent>, dealing <damage> damage!",
+        "<opponent> was scratched by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> scratched <opponent>, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> tried to scratch <opponent>, but missed!",
+        "<self> tried to scratch <opponent>, but missed and fell over!",
+        "<opponent> dodged <self>'s scratch, causing <self> to fall over!"
+      ],
+      "damage_level": 1,
+      "success_rate": 3
+    }
+  ],
+  "rank_2": [
+    {
+      "short": "tackle",
+      "name": "Tackle",
+        "possible_injuries": [
+            "Minor bruising",
+            "Minor scratch",
+            "Medium scratch",
+            "Medium bruising"
+        ],
+        "action_text": [
+            "<opponent> was tackled by <self>, dealing <damage> damage!",
+            "<self> tackled <opponent>, dealing <damage> damage!",
+            "<opponent> was tackled by <self>, dealing <damage> damage and causing <injury>!",
+            "<self> tackled <opponent>, dealing <damage> damage and causing <injury>!"
+        ],
+      "fail_text": [
+        "<self> tried to tackle <opponent>, but missed!",
+        "<self> tried to tackle <opponent>, but missed and fell over!",
+        "<opponent> dodged <self>'s tackle, causing <self> to fall over!"
+      ],
+        "damage_level": 1,
+        "success_rate": 3
+    },
+    {
+        "short": "throw",
+      "name": "Throw",
+        "possible_injuries": [
+            "Minor bruising",
+            "Minor scratch",
+            "Medium scratch",
+            "Medium bruising"
+        ],
+        "action_text": [
+            "<self> propelled <opponent> through the air, dealing <damage> damage!",
+            "<self> threw <opponent>, dealing <damage> damage!",
+            "<opponent> was propelled through the air by <self>, dealing <damage> damage and causing <injury>!",
+            "<self> threw <opponent>, dealing <damage> damage and causing <injury>!"
+        ],
+        "fail_text": [
+            "<self> tried to throw <opponent>, couldn't get a good grip!",
+            "<self> tried to throw <opponent>, but <opponent> wiggled free!"
+        ],
+        "damage_level": 2,
+        "success_rate": 2
+    }
+  ],
+  "rank_3": [
+    {
+      "short": "biteshake",
+      "name": "Bite n' Shake",
+        "possible_injuries": [
+            "Minor bite wound",
+            "Medium bite wound",
+            "Infection from bite"
+        ],
+        "action_text": [
+            "<opponent> was bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+            "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!",
+            "<opponent> got bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+            "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!"
+        ],
+        "fail_text": [
+            "<self> bit <opponent> and tried to shake them around, but couldn't get a good grip!",
+            "<self> bit <opponent> and tried to shake them around, but <opponent> wiggled free of their grasp!",
+            "<self> tried to bite <opponent> and shake them around, but missed!"
+        ],
+        "damage_level": 2,
+        "success_rate": 1
+    }
+  ]
+}

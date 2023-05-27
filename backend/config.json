@@ -1,0 +1,22 @@
+{
+    "xp_blacklist": [
+        "1099459491029848125"
+    ],
+    "SHOP": {
+        "dsa": {
+            "description": "43343dsa",
+            "price": 54,
+            "stock": 454
+        },
+        "beau": {
+            "description": "cat!!!",
+            "price": 600,
+            "stock": -1
+        },
+        "testing": {
+            "description": "testing cool 16 char len descriptions please dont break okay thank you noelind bot",
+            "price": 1,
+            "stock": -1
+        }
+    }
+}
