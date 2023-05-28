@@ -40,19 +40,19 @@ module.exports = {
             ephemeral: true
         });
 
-        if (!PROFILE) return interaction.reply({
+        if (!PROFILE) return interaction.editReply({
             content: 'You do not have a profile yet! Create one with /character create',
             ephemeral: true
         });
-        if (!OPPONENT_PROFILE) return interaction.reply({
+        if (!OPPONENT_PROFILE) return interaction.editReply({
             content: 'That user does not have a profile yet!',
             ephemeral: true
         });
-        if (!PROFILE.characters.active) return interaction.reply({
+        if (!PROFILE.characters.active) return interaction.editReply({
             content: 'You do not have an active character! Set one with /character select',
             ephemeral: true
         });
-        if (!OPPONENT_PROFILE.characters[CHARACTER]) return interaction.reply({
+        if (!OPPONENT_PROFILE.characters[CHARACTER]) return interaction.editReply({
             content: 'That user does not have that character!',
             ephemeral: true
         });
@@ -66,11 +66,11 @@ module.exports = {
             FIGHT = await FIGHT_MODEL.findOne({userID: USER_ID}),
             OPPONENT_FIGHT = await FIGHT_MODEL.findOne({userID: OPPONENT_ID});
 
-        if (FIGHT) return interaction.reply({
+        if (FIGHT) return interaction.editReply({
             content: 'You are already in a fight!',
             ephemeral: true
         });
-        if (OPPONENT_FIGHT) return interaction.reply({
+        if (OPPONENT_FIGHT) return interaction.editReply({
             content: 'That user is already in a fight!',
             ephemeral: true
         });
@@ -101,6 +101,11 @@ module.exports = {
             NEW_FIGHT = new FIGHT_MODEL(FIGHT_DATA);
 
         await NEW_FIGHT.save();
+
+        await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID},
+            { $inc: { 'characters.$[character].stats.fights': 1 } },
+            { arrayFilters: [ { 'character.name': PLAYER1.character.name } ]}
+        );
 
         // Send the reply and create a thread
         const
