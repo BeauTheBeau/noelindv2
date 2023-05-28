@@ -1,3 +1,5 @@
+backend/config.json
+
 ### direnv template
 .direnv
 .envrc
