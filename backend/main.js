@@ -311,12 +311,22 @@ client.on(Events.InteractionCreate, async interaction => {
 
                     // Save the fight data
                     console.log("Saving fight data");
-                    fightData.player1.character.health = opponent_char_data.health;
+                    if (fightData.player1.userID === interaction.user.id.toString()) {
+                        fightData.player2.character.health = opponent_char_data.health;
+                    }
+                    else {
+                        fightData.player1.character.health = opponent_char_data.health;
+                    }
+
                     fightData.markModified('player1.character.health');
                     fightData.markModified('player2.character.health');
                     await fightData.save();
-
                     console.log("Save successful");
+
+                    // Also save the user's profiles
+                    console.log("Saving user profiles");
+                    opponent_data.characters[opponent_data.characters.active].health = opponent_char_data.health;
+                    await profile_data.save();
 
                     // Usernames
                     const username = client.users.cache.get(interaction.user.id).username;
