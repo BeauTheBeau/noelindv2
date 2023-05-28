@@ -4,7 +4,7 @@ const
     {REST, Routes} = require('discord.js'),
     FS = require('node:fs'),
     TOKEN = process.env.TOKEN,
-    CLIENT_ID = process.env.ID,
+    CLIENT_ID = process.env.CLIENT_ID,
     COMMANDS = [];
 
 
