@@ -3,14 +3,13 @@
 
 // Requires
 const
-    { Client, Events, GatewayIntentBits, Collection, EmbedBuilder } = require(`discord.js`),
+    {Client, Events, GatewayIntentBits, Collection, EmbedBuilder} = require(`discord.js`),
     mongoose = require(`mongoose`),
     profileModel = require(`../schemas/profile.js`),
     FIGHT_MODEL = require('../schemas/fight.js'),
     CONFIG = require('../backend/config.json'),
     FS = require(`fs`);
 const MOVES = require("../data/moves.json");
-
 
 
 require(`dotenv`).config();
@@ -34,9 +33,9 @@ function createProfile(userID) {
         userID: userID,
         xp: 0,
         level: 0,
-        characters: { active: null },
+        characters: {active: null},
         inventory: {},
-        combat: { active: false, combatID: null }
+        combat: {active: false, combatID: null}
     });
 
     profile.save().catch(err => console.log(err));
@@ -85,7 +84,6 @@ client.once(Events.ClientReady, async () => {
         await load_commands(folder);
     }
 
-
     // Load events
     for (const file of event_files) {
         const event = require(`events/${file}`);
@@ -110,12 +108,13 @@ client.once(Events.ClientReady, async () => {
         console.log("========================================");
     });
 });
+
 client.on(Events.InteractionCreate, async interaction => {
 
     let profile_data;
 
     try {
-        profile_data = await profileModel.findOne({ userID: interaction.user.id });
+        profile_data = await profileModel.findOne({userID: interaction.user.id});
         if (!profile_data) createProfile(interaction.user.id);
     } catch (err) {
         console.log(err);
@@ -155,12 +154,13 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
 
         case 3:
-            console.log(`Button interaction ${interaction.customId} for ${interaction.user.tag} (${interaction.user.id})`);
+            console.log(`Button interaction 
+            ${interaction.customId} for ${interaction.user.tag} (${interaction.user.id})`);
 
             // Check if user has a profile
             let profile_data;
             try {
-                profile_data = await profileModel.findOne({ userID: interaction.user.id });
+                profile_data = await profileModel.findOne({userID: interaction.user.id});
                 if (!profile_data) createProfile(interaction.user.id);
             } catch (err) {
                 console.log(err);
@@ -176,215 +176,164 @@ client.on(Events.InteractionCreate, async interaction => {
                 return;
             }
 
-            // Check if the button is for a fight
-            let fight_id, action;
+            // =========================================================================================================
+            // === FIGHT BUTTONS === FIGHT BUTTONS === FIGHT BUTTONS === FIGHT BUTTONS === FIGHT BUTTONS === FIGH... ===
+            // =========================================================================================================
+
             if (interaction.customId.startsWith(`f:`)) {
+                // Load necessary modules and data
+                const MOVES = require('../data/moves.json');
+                const fightId = interaction.customId.split(`&?f=`)[1];
+                const action = interaction.customId.split(`&?f=`)[0].split(`f:`)[1];
 
-                const
-                    MOVES = require('../data/moves.json');
+                let moveType, moveDamage;
 
-                fight_id = interaction.customId.split(`&?f=`)[1];
-                action = interaction.customId.split(`&?f=`)[0].split(`f:`)[1];
-
-                // Get the fight ID (after &?f=)
-                // Looks like this: f:(action)&?f=(fight_id)
-                console.log("Getting fight ID: " + fight_id);
-
-                // Get the fight data
-                let fight_data;
+                // Retrieve fight data from the database
+                let fightData;
                 try {
-                    fight_data = await FIGHT_MODEL.findOne({combatID: fight_id});
+                    fightData = await FIGHT_MODEL.findOne({combatID: fightId});
                 } catch (err) {
                     console.log(err);
                     console.log("========================================");
                 }
 
-                // Check if the fight exists
+                // Check if the fight exists and if it is ongoing
                 console.log("Checking if fight exists");
-                if (!fight_data) {
-                    await interaction.reply({
-                        content: `This fight doesn't exist!`,
-                        ephemeral: true
-                    });
-                    return;
-                }
-                if (fight_data.winner !== null) {
-                    await interaction.reply({
-                        content: `This fight is over!`,
-                        ephemeral: true
-                    });
-                    return;
-                }
-                if (!fight_data.player1.userID || !fight_data.player2.userID) {
-                    await interaction.reply({
-                        content: `This fight is missing a player!`,
-                        ephemeral: true
-                    });
-                    return;
-                }
-                if (fight_data.turn !== interaction.user.id.toString()) {
-                    await interaction.reply({
-                        content: `It's not your turn!`,
-                        ephemeral: true
-                    });
-                    return;
-                }
-                console.log("Fight exists");
-                console.log("Checking if move is unlocked");
 
-                let
-                    move_type,
-                    move_damage,
-                    RANKS = Object.keys(MOVES).filter(rank => rank !== "damage_ranges"),
-                    DAMAGE_RANGES = MOVES.damage_ranges;
+                const prechecks = false;
+                if (!prechecks) {
+                    if (!fightData) {
+                        await interaction.reply({
+                            content: `This fight doesn't exist!`,
+                            ephemeral: true
+                        });
+                        return;
+                    }
+                    if (fightData.winner !== null) {
+                        await interaction.reply({
+                            content: `This fight is over!`,
+                            ephemeral: true
+                        });
+                        return;
+                    }
+                    if (!fightData.player1.userID || !fightData.player2.userID) {
+                        await interaction.reply({
+                            content: `This fight is missing a player!`,
+                            ephemeral: true
+                        });
+                        return;
+                    }
+                    if (fightData.turn !== interaction.user.id.toString()) {
+                        await interaction.reply({
+                            content: `It's not your turn!`,
+                            ephemeral: true
+                        });
+                        return;
+                    }
+                }
 
-                // get char rank
-                const
-                    char_rank = profile_data.characters[profile_data.characters.active].rank[1],
-                    char_rank_index = RANKS.findIndex(rank => rank === `rank_${char_rank}`);
-
-                // "damage_ranges": {
-                //     "damage_level": { min : 1, max : 5 },
-                //     }
+                // Get the move type and damage based on character rank and action
+                const RANKS = Object.keys(MOVES).filter(rank => rank !== "damage_ranges");
+                const DAMAGE_RANGES = MOVES.damage_ranges;
+                const charRank = profile_data.characters[profile_data.characters.active].rank[1];
+                const charRankIndex = RANKS.findIndex(rank => rank === `rank_${charRank}`);
 
                 for (const rank of RANKS) {
-                    if (rank === `rank_${char_rank}`) {
-                        move_type = MOVES[rank].find(move => move.short === action);
-                        move_damage = MOVES[rank].find(move => move.short === action).damage_level;
+                    if (rank === `rank_${charRank}`) {
+                        moveType = MOVES[rank].find(move => move.short === action);
+                        moveDamage = MOVES[rank].find(move => move.short === action).damage_level;
                         break;
                     }
                 }
 
-                if (!move_type) {
+                if (!moveType) {
                     await interaction.reply({
-                        content: `This move isn't unlocked yet! You need to be rank ${RANKS[char_rank_index]} to use it, you're currently rank ${char_rank}.`,
+                        content: `This move isn't unlocked yet! You need to be rank ${RANKS[charRankIndex]} to use it, you're currently rank ${charRank}.`,
                         ephemeral: true
                     });
                     return;
                 }
 
-                console.log("Move is unlocked");
+                console.log(moveDamage, moveType)
 
 
-                // Deal damage to the opponent
+                // Calculate damage
+                const damageRange = DAMAGE_RANGES[`level_${moveDamage}`];
+                const damage = Math.floor(Math.random() * (damageRange.max - damageRange.min + 1) + damageRange.min);
+                console.log(damageRange, damage);
+                console.log("========================================");
 
-                // Get the opponent's character data
-                let opponent_data;
-                try { opponent_data = await profileModel.findOne({ userID: fight_data.player1.userID }); }
-                catch (err) {
-                    console.log(err);
-                    console.log("========================================");
-                }
+                // Get opponent data
+                const opponentId = fightData.player1.userID === interaction.user.id.toString() ? fightData.player2.userID : fightData.player1.userID;
+                const opponent_data = await profileModel.findOne({userID: opponentId});
+                const opponent_char_data = opponent_data.characters[opponent_data.characters.active];
+                console.log(opponentId)
+                console.table(opponent_char_data);
+                console.log(opponent_data.characters[opponent_data.characters.active].health.toString());
+                console.log("========================================");
 
-                if (fight_data.player1.userID === interaction.user.id.toString()) {
-                    try {
-                        opponent_data = await profileModel.findOne({userID: fight_data.player2.userID});
-                    } catch (err) {
-                        console.log(err);
-                        console.log("========================================");
-                    }
-                }
-
-                // Get the opponent's character data
-                let opponent_char_data;
-
-                try { opponent_char_data = opponent_data.characters[opponent_data.characters.active]; }
-                catch (err) {
-                    console.log(err);
-                    console.log("========================================");
-                }
-
-                const
-                    damage_range = DAMAGE_RANGES[`level_${move_damage}`];
-                    damage = Math.floor(Math.random() * (damage_range.max - damage_range.min + 1)) + damage_range.min;
-
-                opponent_char_data.health -= damage;
+                // Update health
+                opponent_char_data.health = [opponent_char_data.health[0] - damage, opponent_char_data.health[1]];
+                console.log(opponent_char_data.health.toString());
+                console.log("========================================");
 
                 // Check if the opponent is dead
-                if (opponent_char_data.health <= 0) {
+                if (opponent_char_data.health[0] <= 0) {
 
-                    fight_data.winner = interaction.user.id.toString();
-                    fight_data.loser = opponent_data.userID;
+                    // Set the winner
+                    fightData.winner = interaction.user.id.toString();
+                    await fightData.save();
 
-                    // Add XP to the winner and add a win to their char stasts
-                    const
-                        xp = Math.floor(Math.random() * 12) + 12;
+                    // Update XP
+                    profile_data.xp += opponent_char_data.xp;
+                    await profile_data.save();
 
-                    profile_data.xp += xp;
-                    profile_data.characters[profile_data.characters.active].stats.wins += 1;
-                    profile_data.characters[profile_data.characters.active].rank[0] += xp;
+                    // Send embed
+                    const embed = new MessageEmbed()
+                        .setColor("#ff0000")
+                        .setTitle(`${profile_data.username} won!`)
+                        .setDescription(`${profile_data.username} defeated ${opponent_data.username}'s ${opponent_char_data.name} and gained ${opponent_char_data.xp} XP!`)
+                        .setTimestamp();
 
-                    if (profile_data.characters[profile_data.characters.active].rank[0] >= 100) {
-                        profile_data.characters[profile_data.characters.active].rank[0] = 0;
-                        profile_data.characters[profile_data.characters.active].rank[1] += 1;
-                    }
+                    await interaction.reply({embeds: [embed]});
 
-                    // Add a loss to the loser's char stats
-                    opponent_data.characters[opponent_data.characters.active].stats.losses += 1;
-                    opponent_data.characters[profile_data.characters.active].rank[0] += xp / 4;
+                    // Delete the fight from the database
+                    await FIGHT_MODEL.deleteOne({combatID: fightId});
 
-                    if (opponent_data.characters[profile_data.characters.active].rank[0] >= 100) {
-                        opponent_data.characters[profile_data.characters.active].rank[0] = 0;
-                        opponent_data.characters[profile_data.characters.active].rank[1] += 1;
-                    }
-
-                    // Save the data
-                    try {
-                        await profile_data.save();
-                        await opponent_data.save();
-                        await fight_data.save();
-                    }
-                    catch (err) {
-                        console.log(err);
-                        console.log("========================================");
-                    }
-
-                    // Send the embed
-                    const
-                        embed = new MessageEmbed()
-                            .setColor("RED")
-                            .setTitle("Fight Over!")
-                            .setDescription(`${interaction.user.username} has defeated ${opponent_data.username}!`)
-                            .addFields(
-                                { name: `${interaction.user.username}'s ${profile_data.characters[profile_data.characters.active].name}`, value: `Health: ${profile_data.characters[profile_data.characters.active].health}`, inline: true },
-                                { name: `${opponent_data.username}'s ${opponent_data.characters[opponent_data.characters.active].name}`, value: `Health: ${opponent_data.characters[opponent_data.characters.active].health}`, inline: true },
-                            )
-                            .setTimestamp()
-
-                    await interaction.reply({ embeds: [embed] });
                 }
 
+                // If the opponent is not dead, switch turns
                 else {
 
-                    // send embed detailing the move
-                    const
-                        embed = new EmbedBuilder()
-                            .setTitle(`${interaction.user.username} used ${move_type.name}!`)
-                            .setDescription(`${interaction.user.username} dealt ${damage} damage to ${opponent_data.username}'s ${opponent_char_data.name}!`)
-                            .addFields(
-                                { name: `${interaction.user.username}'s ${profile_data.characters[profile_data.characters.active].name}`, value: `Health: ${profile_data.characters[profile_data.characters.active].health}`, inline: true },
-                                { name: `${opponent_data.username}'s ${opponent_data.characters[opponent_data.characters.active].name}`, value: `Health: ${opponent_data.characters[opponent_data.characters.active].health}`, inline: true },
-                            )
-                            .setTimestamp()
+                    // Switch turns
+                    fightData.turn = opponentId;
+                    mongoose.set('debug', true);
 
-                    await interaction.reply({ embeds: [embed] });
+                    // Save the fight data
+                    console.log("Saving fight data");
+                    fightData.player1.character.health = opponent_char_data.health;
+                    fightData.markModified('player1.character.health');
+                    fightData.markModified('player2.character.health');
+                    await fightData.save();
 
-                    // Save the data
-                    try {
-                        await profile_data.save();
-                        await opponent_data.save();
-                        await fight_data.save();
-                    }
-                    catch (err) {
-                        console.log(err);
-                        console.log("========================================");
-                    }
+                    console.log("Save successful");
+
+                    // Usernames
+                    const username = client.users.cache.get(interaction.user.id).username;
+                    const opponent_username = client.users.cache.get(opponentId).username;
+
+                    // Send embed
+                    const embed = new EmbedBuilder()
+                        .setColor("#ff0000")
+                        .setTitle(`${username} used ${moveType.name}!`)
+                        .setDescription(`**${username}** dealt **${damage} damage** to ${opponent_username}'s **${opponent_char_data.name}**!`)
+                        .setTimestamp();
+
+                    await interaction.reply({embeds: [embed]});
                 }
             }
 
             break;
-
-
 
         default:
             interaction.reply({
@@ -412,7 +361,7 @@ client.on(Events.MessageCreate, async message => {
     // Check if user has a profile
     let profile_data;
     try {
-        profile_data = await profileModel.findOne({ userID: message.author.id });
+        profile_data = await profileModel.findOne({userID: message.author.id});
         if (!profile_data) createProfile(message.author.id);
 
     } catch (err) {
@@ -443,11 +392,13 @@ client.on(Events.MessageCreate, async message => {
 
 // Handlers
 process.on(`unhandledRejection`, err => {
-    console.log(`Unhandled promise rejection: ${err}`);
+    console.log(`Unhandled promise rejection`);
+    console.error(err.stack);
     console.log("========================================");
 });
 process.on(`uncaughtException`, err => {
-    console.log(`Uncaught exception: ${err}`);
+    console.log(`Uncaught exception`);
+    console.error(err.stack);
     console.log("========================================");
 });
 
@@ -455,12 +406,11 @@ process.on(`uncaughtException`, err => {
 // Login
 try {
     client.login(TOKEN);
-}
-catch (err) {
+} catch (err) {
     console.log(`Failed to login to Discord!`);
-    console.log(err);
+    console.error(err.stack);
     console.log("========================================");
 }
 
 // Export
-module.exports = { client: client, createProfile: createProfile };
+module.exports = {client: client, createProfile: createProfile};
