@@ -278,7 +278,25 @@ module.exports = {
                         .setTitle(`Character Info`)
                         .setColor('#ff0000')
                         .setTimestamp()
-                        .setDescription(`## Basics\nName: ${CHARACTER.name}\nRank: ${CHARACTER.rank[1]}\nHealth: ${CHARACTER.health[0]}/${CHARACTER.health[1]}\n\n## Stats\nFights: ${CHARACTER.stats.fights}\nWins: ${CHARACTER.stats.wins}\nLosses: ${CHARACTER.stats.losses}\nDraws: ${CHARACTER.stats.draws}\nSurrenders: ${CHARACTER.stats.surrender}`);
+                        .setDescription(
+                            "## Basics\n" +
+                            "Name: " + CHARACTER.name + "\n" +
+                            "Rank: " + CHARACTER.rank[1] + "\n" +
+                            "Health: " + CHARACTER.health[0] + "/" + CHARACTER.health[1] + "\n\n" +
+                            "## Stats\n" +
+                            "Fights: " + CHARACTER.stats.fights + "\n" +
+                            "Wins: " + CHARACTER.stats.wins + "\n" +
+                            "Losses: " + CHARACTER.stats.losses + "\n" +
+                            "Draws: " + CHARACTER.stats.draws + "\n" +
+                            "Surrenders: " + CHARACTER.stats.surrender + "\n\n" +
+                            "## Last...\n" +
+                            "Ate: " + (CHARACTER.last.ate || "Never") + "\n" +
+                            "Fought: " + (CHARACTER.last.fight || "Never") + "\n" +
+                            "Won: " + (CHARACTER.last.win || "Never") + "\n" +
+                            "Lost: " + (CHARACTER.last.loss || "Never") + "\n" +
+                            "Drew: " + (CHARACTER.last.draw || "Never") + "\n" +
+                            "Surrendered: " + (CHARACTER.last.surrender || "Never")
+                        );
 
                 await interaction.editReply({
                     content: `:white_check_mark::white_check_mark: Character retrieved!`,
