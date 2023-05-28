@@ -9,7 +9,8 @@ const
     DISCORD = require('discord.js'),
     PROFILE_MODEL = require('../../schemas/profile.js'),
     CONFIG = require('../../backend/config.json'),
-    LEKARS = CONFIG.lekars; // array
+    LEKARS = CONFIG.lekars,
+    fs = require('fs');
 
 module.exports = {
 
@@ -55,8 +56,8 @@ module.exports = {
     async execute(interaction) {
 
         const
-            USER_ID = interaction.options.getUser('user').id || interaction.user.id,
-            PROFILE = await PROFILE_MODEL.findOne({ userID: USER_ID });
+            USER_ID = /* check if user option is set */ interaction.options.getUser('user') ? interaction.options.getUser('user').id : interaction.user.id,
+            PROFILE = await PROFILE_MODEL.findOne({userID: USER_ID});
 
         console.log(PROFILE)
 
@@ -88,10 +89,9 @@ module.exports = {
 
                 // Set isLekar to true and add the char to the array
                 PROFILE.characters[CHARACTER].isLekar = true;
-                CONFIG.lekars.push({ name: CHARACTER, user: USER_ID });
+                CONFIG.lekars.push({name: CHARACTER, user: USER_ID});
 
                 // save config json
-                const fs = require('fs');
                 fs.writeFile('./backend/config.json', JSON.stringify(CONFIG), (err) => {
                     if (err) throw err;
                     console.log('The file has been saved!');
@@ -105,9 +105,69 @@ module.exports = {
                     ephemeral: true
                 });
 
+            case 'remove':
+
+                // Check if the character is a Lekar
+                // Loop through array and check the dictionaries
+
+                for (let i = 0; i < LEKARS.length; i++) {
+                    if (LEKARS[i].name === CHARACTER) {
+                        CONFIG.lekars.splice(i, 1);
+                        PROFILE.characters[CHARACTER].isLekar = false;
+                        PROFILE.save();
+                        fs.writeFile('./backend/config.json', JSON.stringify(CONFIG), (err) => {
+                            if (err) throw err;
+                            console.log('The file has been saved!');
+                        });
+                        return interaction.reply({
+                            content: `Removed <@${USER_ID}>'s character ${CHARACTER} as a Lekars!`,
+                            ephemeral: true
+                        });
+                    }
+                }
+
+                return interaction.reply({
+                    content: 'This character is not a Lekar!',
+                    ephemeral: true
+                });
+
+            case 'list':
+
+                // Check if the user is a Lekar
+                // Loop through array and check the dictionaries
+
+                let lekars = [];
+
+                if (USER) {
+                    for (let i = 0; i < LEKARS.length; i++) {
+                        if (LEKARS[i].user === USER_ID) {
+                            lekars.push(LEKARS[i].name);
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < LEKARS.length; i++) {
+                        lekars.push(`<@${LEKARS[i].user}> | ${LEKARS[i].name}`);
+                    }
+                }
+
+                if (lekars.length === 0) return interaction.reply({
+                    content: 'This user has no Lekars!',
+                    ephemeral: true
+                });
+
+                return interaction.reply({
+                    content: lekars.join('\n'),
+                    ephemeral: true
+                });
+
+            default: {
+                return interaction.reply({
+                    content: 'Something went wrong!',
+                    ephemeral: true
+                });
+            }
 
 
-                break;
         }
     }
 }
