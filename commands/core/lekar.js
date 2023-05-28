@@ -51,15 +51,28 @@ module.exports = {
                 .setName('user')
                 .setDescription('User to list Lekars of')
                 .setRequired(false)
+            ))
+        .addSubcommand(subcommand => subcommand
+            .setName('heal')
+            .setDescription('Heal a character')
+            .addUserOption(option => option
+                .setName('user')
+                .setDescription('User who owns the character')
+                .setRequired(true)
+            )
+            .addStringOption(option => option
+                .setName('character')
+                .setDescription('Name of the character; defaults to their active character')
+                .setRequired(false)
             )),
 
     async execute(interaction) {
 
         const
-            USER_ID = /* check if user option is set */ interaction.options.getUser('user') ? interaction.options.getUser('user').id : interaction.user.id,
+            USER_ID = interaction.options.getUser('user') ? interaction.options.getUser('user').id : interaction.user.id,
             PROFILE = await PROFILE_MODEL.findOne({userID: USER_ID});
 
-        console.log(PROFILE)
+        console.log(USER_ID);
 
         const
             SUBCOMMAND = interaction.options.getSubcommand(),
@@ -79,10 +92,7 @@ module.exports = {
                     }
                 }
 
-                let characterExists = false;
-                if (PROFILE.characters[CHARACTER]) characterExists = true;
-
-                if (!characterExists) return interaction.reply({
+                if (!PROFILE.characters[CHARACTER]) return interaction.reply({
                     content: 'This character does not exist!',
                     ephemeral: true
                 });
@@ -97,14 +107,12 @@ module.exports = {
                     console.log('The file has been saved!');
                 });
 
-                // Save the profile and reply
                 PROFILE.save();
 
                 return interaction.reply({
                     content: `Added <@${USER_ID}>'s character ${CHARACTER} as a Lekars!`,
                     ephemeral: true
                 });
-
             case 'remove':
 
                 // Check if the character is a Lekar
@@ -130,7 +138,6 @@ module.exports = {
                     content: 'This character is not a Lekar!',
                     ephemeral: true
                 });
-
             case 'list':
 
                 // Check if the user is a Lekar
@@ -159,6 +166,43 @@ module.exports = {
                     content: lekars.join('\n'),
                     ephemeral: true
                 });
+            case 'heal':
+
+                // Check if the user's active character is a Lekar
+                // Loop through array and check the dictionaries
+
+                let activeCharacter = PROFILE.activeCharacter;
+
+                if (CHARACTER) activeCharacter = CHARACTER;
+                if (!PROFILE.characters[activeCharacter]) return interaction.reply({
+                    content: 'This character does not exist!',
+                    ephemeral: true
+                });
+
+                if (!PROFILE.characters[activeCharacter].isLekar) return interaction.reply({
+                    content: `${activeCharacter} is not a Lekar!`,
+                    ephemeral: true
+                });
+
+                if (PROFILE.characters[activeCharacter].health === 100) return interaction.reply({
+                    content: `${activeCharacter} is already at full health!`,
+                    ephemeral: true
+                });
+
+                // Add a random number between 1 and 10 to the character's health
+                let health = PROFILE.characters[activeCharacter].health;
+                health += Math.floor(Math.random() * 10) + 1;
+                if (health > 100) health = 100;
+
+                PROFILE.characters[activeCharacter].health = health;
+                PROFILE.save();
+
+                return interaction.reply({
+                    content: `${activeCharacter} has been healed! Their health is now ${health}!`,
+                    ephemeral: true
+                });
+
+                break
 
             default: {
                 return interaction.reply({
@@ -166,8 +210,6 @@ module.exports = {
                     ephemeral: true
                 });
             }
-
-
         }
     }
 }
