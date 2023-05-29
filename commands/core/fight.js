@@ -127,7 +127,8 @@ module.exports = {
         const
             RANK_1 = new DISCORD.ActionRowBuilder(),
             RANK_2 = new DISCORD.ActionRowBuilder(),
-            RANK_3 = new DISCORD.ActionRowBuilder();
+            RANK_3 = new DISCORD.ActionRowBuilder(),
+            ALL = new DISCORD.ActionRowBuilder();
 
         const
             RANK_1_BUTTONS = [
@@ -174,11 +175,23 @@ module.exports = {
                     .setCustomId(`f:biteshake&?f=${COMBAT_ID}`)
                     .setLabel('Bite \'n\' Shake')
                     .setStyle(DISCORD.ButtonStyle.Secondary)
-            ]
+            ],
+            ALL_BUTTONS = [
+                await new DISCORD.ButtonBuilder()
+                    .setLabel(`Surrender`)
+                    .setCustomId(`f:surrender&?f=${COMBAT_ID}`)
+                    .setStyle(DISCORD.ButtonStyle.Danger),
+
+                await new DISCORD.ButtonBuilder()
+                    .setLabel(`Force End`)
+                    .setCustomId(`f:force&?f=${COMBAT_ID}`)
+                    .setStyle(DISCORD.ButtonStyle.Danger)
+            ];
 
         RANK_1.addComponents(RANK_1_BUTTONS);
         RANK_2.addComponents(RANK_2_BUTTONS);
         RANK_3.addComponents(RANK_3_BUTTONS);
+        ALL.addComponents(ALL_BUTTONS);
 
         await interaction.editReply({
             content: `:white_check_mark::white_check_mark::ballot_box_with_check: Setting up buttons...`,
@@ -206,6 +219,6 @@ module.exports = {
         });
 
         await THREAD.send(`<@${USER_ID}> challenged <@${OPPONENT_ID}> to a fight!`);
-        return THREAD.send({embeds: [EMBED], components: [RANK_1, RANK_2, RANK_3]});
+        return THREAD.send({embeds: [EMBED], components: [RANK_1, RANK_2, RANK_3, ALL]});
     }
 }
