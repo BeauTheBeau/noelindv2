@@ -63,17 +63,35 @@ module.exports = {
         });
 
         const
-            FIGHT = await FIGHT_MODEL.findOne({userID: USER_ID}),
-            OPPONENT_FIGHT = await FIGHT_MODEL.findOne({userID: OPPONENT_ID});
+            FIGHT = await FIGHT_MODEL.findOne({userID: USER_ID});
 
         if (FIGHT) return interaction.editReply({
             content: 'You are already in a fight!',
             ephemeral: true
         });
-        if (OPPONENT_FIGHT) return interaction.editReply({
-            content: 'That user is already in a fight!',
-            ephemeral: true
-        });
+
+        // Loop through all fights (dictionary) and check if either of the users are in a fight
+        // If they are, return an error
+        // If they aren't, create a new fight
+
+        for (const FIGHT of await FIGHT_MODEL.find()) {
+            if (FIGHT.player1.userID === USER_ID || FIGHT.player2.userID === USER_ID) {
+                if (FIGHT.winner === null) return interaction.editReply({
+                    content: 'You are already in a fight!',
+                    ephemeral: true
+                });
+            }
+
+            if (FIGHT.player1.userID === OPPONENT_ID || FIGHT.player2.userID === OPPONENT_ID) {
+                if (FIGHT.winner === null) return interaction.editReply({
+                    content: 'That user is already in a fight!',
+                    ephemeral: true
+                });
+            }
+        }
+
+
+
 
 
         const
