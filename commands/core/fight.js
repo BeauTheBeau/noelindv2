@@ -75,6 +75,7 @@ module.exports = {
             ephemeral: true
         });
 
+
         const
             COMBAT_ID = `${USER_ID}-${OPPONENT_ID}-${Date.now()}`,
             PLAYER1 = {
@@ -101,16 +102,18 @@ module.exports = {
             NEW_FIGHT = new FIGHT_MODEL(FIGHT_DATA);
 
         await NEW_FIGHT.save();
+        console.log("SAVED!")
 
-        await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID},
-            { $inc: { 'characters.$[character].stats.fights': 1 } },
-            { arrayFilters: [ { 'character.name': PLAYER1.character.name } ]}
-        );
+
+        // await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID},
+        //     { $inc: { 'characters.$[character].stats.fights': 1 } },
+        //     { arrayFilters: [ { 'character.name': PROFILE.characters[PROFILE.characters.active].name } ] }
+        // );
 
         // Send the reply and create a thread
         const
             THREAD = await interaction.channel.threads.create({
-                name: `Fight: ${PLAYER1.character.name} Vs. ${PLAYER2.character.name}`,
+                name: `Fight: ${PROFILE.characters[PROFILE.characters.active].name} vs ${OPPONENT_PROFILE.characters[CHARACTER].name}`,
                 autoArchiveDuration: 60,
                 reason: 'Fight thread'
             }),
