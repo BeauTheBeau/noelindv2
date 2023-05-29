@@ -290,12 +290,12 @@ module.exports = {
                             "Draws: " + CHARACTER.stats.draws + "\n" +
                             "Surrenders: " + CHARACTER.stats.surrender + "\n\n" +
                             "## Last...\n" +
-                            "Ate: " + (CHARACTER.last.ate || "Never") + "\n" +
-                            "Fought: " + (CHARACTER.last.fight || "Never") + "\n" +
-                            "Won: " + (CHARACTER.last.win || "Never") + "\n" +
-                            "Lost: " + (CHARACTER.last.loss || "Never") + "\n" +
-                            "Drew: " + (CHARACTER.last.draw || "Never") + "\n" +
-                            "Surrendered: " + (CHARACTER.last.surrender || "Never")
+                                    "Ate: <t:" + (Math.floor(CHARACTER.last.ate/1000   ) || "Never") + ":R>\n" +
+                                 "Fought: <t:" + (Math.floor(CHARACTER.last.fight/1000 ) || "Never") + ":R>\n" +
+                                    "Won: <t:" + (Math.floor(CHARACTER.last.win/1000   ) || "Never") + ":R>\n" +
+                                   "Lost: <t:" + (Math.floor(CHARACTER.last.loss/1000  ) || "Never") + ":R>\n" +
+                                   "Drew: <t:" + (Math.floor(CHARACTER.last.draw/1000  ) || "Never") + ":R>\n" +
+                            "Surrendered: <t:" + (Math.floor(CHARACTER.last.surrender/1000 ) || "Never") + ":R>"
                         );
 
                 await interaction.editReply({
@@ -320,26 +320,20 @@ module.exports = {
                 content: `:mag::ballot_box_with_check:  Conducting prechecks...`,
                 ephemeral: true
             });
-
             if (!CHARACTERS[NAME]) return interaction.editReply({
                 content: `:negative_squared_cross_mark::ballot_box_with_check: You don't have a character with that name`,
                 ephemeral: true
             });
-
-
             if (CHARACTERS[NAME].health[0] === CHARACTERS[NAME].health[1]) return interaction.editReply({
                 content: `:negative_squared_cross_mark::ballot_box_with_check: Your health is already full`,
                 ephemeral: true
             });
-
             if (CHARACTERS[NAME].health[0] === 0) return interaction.editReply({
                 content: `:negative_squared_cross_mark::ballot_box_with_check: You are dead`,
                 ephemeral: true
             });
-
-            // If health is below 40
-            if (CHARACTERS[NAME].health[0] < 40) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: Health is too low to eat, visit a Llama to heal instead`,
+            if (CHARACTERS[NAME].health[0] < 60) return interaction.editReply({
+                content: `:negative_squared_cross_mark::ballot_box_with_check: Health is too low to eat, visit a Lekar to heal instead`,
                 ephemeral: true
             });
 
@@ -359,7 +353,15 @@ module.exports = {
                         .setDescription(`You ate some food and gained ${HEALTH - CHARACTERS[NAME].health[0]} health!`);
 
                 CHARACTERS[NAME].health[0] = HEALTH;
+                if (CHARACTERS[NAME].health[0] > CHARACTERS[NAME].health[1]) CHARACTERS[NAME].health[0] = CHARACTERS[NAME].health[1];
                 await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
+
+                await interaction.editReply({
+                    content: `:white_check_mark::white_check_mark: You successfully ate!`,
+                    ephemeral: true,
+                    embeds: [EMBED]
+                });
+
             } catch (error) {
                 console.log(error);
                 await interaction.editReply({

@@ -62,8 +62,8 @@ module.exports = {
             )
             .addStringOption(option => option
                 .setName('character')
-                .setDescription('Name of the character; defaults to their active character')
-                .setRequired(false)
+                .setDescription('Name of the character to heal')
+                .setRequired(true)
             )),
 
     async execute(interaction) {
@@ -171,38 +171,66 @@ module.exports = {
                 // Check if the user's active character is a Lekar
                 // Loop through array and check the dictionaries
 
-                let activeCharacter = PROFILE.activeCharacter;
+                const
+                    healer_profile = await PROFILE_MODEL.findOne({userID: interaction.user.id}),
+                    target_profile = await PROFILE_MODEL.findOne({userID: USER_ID});
 
-                if (CHARACTER) activeCharacter = CHARACTER;
-                if (!PROFILE.characters[activeCharacter]) return interaction.reply({
+                // Loop through the lekar array and check if the user's active character is a lekar
+                // Dont check if target is in the array
+
+                // Array looks like this:
+                // "lekars": [
+                // {
+                //     "name": "Arkane",
+                //     "user": "501423235854893066"
+                // },
+                // {
+                //     "name": "Beau2",
+                //     "user": "729567972070391848"
+                // }
+                // ]
+
+                let isLekar = false;
+                for (let i = 0; i < LEKARS.length; i++) {
+                    if (LEKARS[i].user === interaction.user.id) {
+                        if (healer_profile.characters.active === LEKARS[i].name) {
+                            isLekar = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!isLekar) return interaction.reply({
+                    content: 'Your active character is not a Lekar!',
+                    ephemeral: true
+                });
+
+                // Heal the target
+
+                if (!target_profile.characters[CHARACTER]) return interaction.reply({
                     content: 'This character does not exist!',
                     ephemeral: true
                 });
 
-                if (!PROFILE.characters[activeCharacter].isLekar) return interaction.reply({
-                    content: `${activeCharacter} is not a Lekar!`,
+                if (target_profile.characters[CHARACTER].health === 100) return interaction.reply({
+                    content: 'This character is already at full health!',
                     ephemeral: true
                 });
 
-                if (PROFILE.characters[activeCharacter].health === 100) return interaction.reply({
-                    content: `${activeCharacter} is already at full health!`,
-                    ephemeral: true
-                });
+                // Heal tham a random amount between 1 and 25
+                let oldHealth = target_profile.characters[CHARACTER].health[0];
+                target_profile.characters[CHARACTER].health[0] += Math.floor(Math.random() * 25) + 1;
+                if (target_profile.characters[CHARACTER].health[0] > 100) {
+                    target_profile.characters[CHARACTER].health[0] = 100;
+                }
 
-                // Add a random number between 1 and 10 to the character's health
-                let health = PROFILE.characters[activeCharacter].health;
-                health += Math.floor(Math.random() * 10) + 1;
-                if (health > 100) health = 100;
-
-                PROFILE.characters[activeCharacter].health = health;
-                PROFILE.save();
+                target_profile.markModified('characters');
+                target_profile.save();
 
                 return interaction.reply({
-                    content: `${activeCharacter} has been healed! Their health is now ${health}!`,
-                    ephemeral: true
+                    content: `${healer_profile.characters.active} healed ${CHARACTER}, their health went from ${oldHealth} to ${target_profile.characters[CHARACTER].health[0]}!`,
+                    ephemeral: false
                 });
-
-                break
 
             default: {
                 return interaction.reply({
