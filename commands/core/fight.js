@@ -221,8 +221,8 @@ module.exports = {
                 .setTimestamp();
 
         EMBED.addFields(
-            {name: `${PLAYER1.character.name} HP`, value: `${FIGHT_DATA.player2.character.health[0]}/100`, inline: true},
-            {name: `${PLAYER2.character.name} HP`, value: `${FIGHT_DATA.player1.character.health[0]}/100`, inline: true},
+            {name: `${PLAYER1.character.name} HP`, value: `${FIGHT_DATA.player1.character.health[0]}/100`, inline: true},
+            {name: `${PLAYER2.character.name} HP`, value: `${FIGHT_DATA.player2.character.health[0]}/100`, inline: true},
             {name: `Turn`, value: `It's <@${USER_ID}>'s turn (${PLAYER1.character.name})`, inline: true},
         );
 
