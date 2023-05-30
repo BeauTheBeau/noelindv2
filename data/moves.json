@@ -37,7 +37,6 @@
       ],
       "fail_text": [
         "<self> tried to bite <opponent>, but missed!",
-        "<self> tried to bite <opponent>, but missed and fell over!",
         "<opponent> dodged <self>'s bite, causing <self> to fall over!"
       ],
       "damage_level": 1,
@@ -58,7 +57,6 @@
       ],
       "fail_text": [
         "<self> tried to scratch <opponent>, but missed!",
-        "<self> tried to scratch <opponent>, but missed and fell over!",
         "<opponent> dodged <self>'s scratch, causing <self> to fall over!"
       ],
       "damage_level": 1,
@@ -83,7 +81,6 @@
         ],
       "fail_text": [
         "<self> tried to tackle <opponent>, but missed!",
-        "<self> tried to tackle <opponent>, but missed and fell over!",
         "<opponent> dodged <self>'s tackle, causing <self> to fall over!"
       ],
         "damage_level": 1,
