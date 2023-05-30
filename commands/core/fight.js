@@ -23,12 +23,20 @@ module.exports = {
             .setName('character')
             .setDescription('Character to fight with')
             .setRequired(true)
+        )
+
+        .addBooleanOption(option => option
+            .setName("spar")
+            .setDescription("Whether or not to spar")
+            .setRequired(true)
         ),
+
 
     async execute(interaction) {
 
         const
             USER_ID = interaction.user.id,
+            IS_SPAR = interaction.options.getBoolean('spar'),
             OPPONENT_ID = interaction.options.getUser('user').id,
             CHARACTER = interaction.options.getString('character'),
             PROFILE = await PROFILE_MODEL.findOne({userID: USER_ID}),
@@ -142,70 +150,138 @@ module.exports = {
             RANK_1 = new DISCORD.ActionRowBuilder(),
             RANK_2 = new DISCORD.ActionRowBuilder(),
             RANK_3 = new DISCORD.ActionRowBuilder(),
+            RANK_4 = new DISCORD.ActionRowBuilder(),
+            RANK_5 = new DISCORD.ActionRowBuilder(),
             ALL = new DISCORD.ActionRowBuilder();
 
-        const
+        let
             RANK_1_BUTTONS = [
                 await new DISCORD.ButtonBuilder()
-                    .setLabel('Rank 1')
+                    .setLabel('Rank 1+')
                     .setCustomId('f:rank_1')
                     .setStyle(DISCORD.ButtonStyle.Primary)
                     .setDisabled(true),
-
-                new DISCORD.ButtonBuilder()
-                    .setCustomId(`f:basic_bite&?f=${COMBAT_ID}`)
-                    .setLabel('Basic Bite')
-                    .setStyle(DISCORD.ButtonStyle.Secondary),
-
-                new DISCORD.ButtonBuilder()
-                    .setCustomId(`f:basic_claw&?f=${COMBAT_ID}`)
-                    .setLabel('Basic Claw')
-                    .setStyle(DISCORD.ButtonStyle.Secondary)
             ],
             RANK_2_BUTTONS = [
                 await new DISCORD.ButtonBuilder()
-                    .setLabel('Rank 2')
+                    .setLabel('Rank 2+')
                     .setCustomId('f:rank_2')
                     .setStyle(DISCORD.ButtonStyle.Primary)
                     .setDisabled(true),
-                new DISCORD.ButtonBuilder()
-                    .setCustomId(`f:tackle&?f=${COMBAT_ID}`)
-                    .setLabel('Tackle')
-                    .setStyle(DISCORD.ButtonStyle.Secondary),
-                new DISCORD.ButtonBuilder()
-                    .setCustomId(`f:throw&?f=${COMBAT_ID}`)
-                    .setLabel('Throw')
-                    .setStyle(DISCORD.ButtonStyle.Secondary)
             ],
             RANK_3_BUTTONS = [
 
                 await new DISCORD.ButtonBuilder()
-                    .setLabel('Rank 3')
+                    .setLabel('Rank 3+')
                     .setCustomId('f:rank_3')
                     .setStyle(DISCORD.ButtonStyle.Primary)
                     .setDisabled(true),
-
-                new DISCORD.ButtonBuilder()
-                    .setCustomId(`f:biteshake&?f=${COMBAT_ID}`)
-                    .setLabel('Bite \'n\' Shake')
-                    .setStyle(DISCORD.ButtonStyle.Secondary)
+            ],
+            RANK_4_BUTTONS = [
+                await new DISCORD.ButtonBuilder()
+                    .setLabel('Rank 4+')
+                    .setCustomId('f:rank_4')
+                    .setStyle(DISCORD.ButtonStyle.Primary)
+                    .setDisabled(true),
+            ],
+            RANK_5_BUTTONS = [
+                await new DISCORD.ButtonBuilder()
+                    .setLabel('Rank 5+')
+                    .setCustomId('f:rank_5')
+                    .setStyle(DISCORD.ButtonStyle.Primary)
+                    .setDisabled(true),
             ],
             ALL_BUTTONS = [
                 await new DISCORD.ButtonBuilder()
+                    .setLabel('All Ranks')
+                    .setCustomId('f:all')
+                    .setStyle(DISCORD.ButtonStyle.Primary)
+                    .setDisabled(true),
+                await new DISCORD.ButtonBuilder()
                     .setLabel(`Surrender`)
-                    .setCustomId(`f:surrender&?f=${COMBAT_ID}`)
+                    .setCustomId(`f:surrender&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
                     .setStyle(DISCORD.ButtonStyle.Danger),
-
                 await new DISCORD.ButtonBuilder()
                     .setLabel(`Draw`)
-                    .setCustomId(`f:force&?f=${COMBAT_ID}`)
+                    .setCustomId(`f:force&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
                     .setStyle(DISCORD.ButtonStyle.Danger)
-            ];
+            ]
+
+
+        // example of moves
+
+        // "rank_1": [
+        //     {
+        //         "name": "test"
+        //     }
+        // ]
+
+        let ALL_MOVES = []
+
+        for (let RANK in MOVES) {
+
+            if (RANK === "success" || RANK === "damage_ranges") continue;
+            console.log(RANK)
+
+            let move_short, move_long;
+
+            // RANK is an array of moves
+            for (let MOVE of MOVES[RANK]) {
+
+                move_short = MOVE.short
+                move_long = MOVE.name
+                const ID = `f:${move_short}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`
+
+                // Check for the ID in ALL MOVES
+                for (let i = 0; i < ALL_MOVES.length; i++) {
+                    if (ALL_MOVES[i].id === ID) MOVES[RANK].splice(i, 1)
+                }
+
+                ALL_MOVES.push(ID)
+
+                console.log(`> f:${move_short}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
+
+                const
+                    buttonPromise = new Promise(async (resolve, reject) => {
+                        const BUTTON = await new DISCORD.ButtonBuilder()
+                            .setCustomId(`f:${move_short}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
+                            .setLabel(`${move_long}`)
+                            .setStyle(DISCORD.ButtonStyle.Primary);
+
+                        resolve(BUTTON);
+                    });
+
+                // Check for any de
+
+                console.log(RANK)
+
+                switch (RANK) {
+                    case "rank_1":
+                        RANK_1_BUTTONS.push(await buttonPromise);
+                        break;
+                    case "rank_2":
+                        RANK_2_BUTTONS.push(await buttonPromise);
+                        break;
+                    case "rank_3":
+                        RANK_3_BUTTONS.push(await buttonPromise);
+                        break;
+                    case "rank_4":
+                        RANK_4_BUTTONS.push(await buttonPromise);
+                        break;
+                    case "rank_5":
+                        RANK_5_BUTTONS.push(await buttonPromise);
+                        break;
+                }
+            }
+        }
+
 
         RANK_1.addComponents(RANK_1_BUTTONS);
         RANK_2.addComponents(RANK_2_BUTTONS);
         RANK_3.addComponents(RANK_3_BUTTONS);
-        ALL.addComponents(ALL_BUTTONS);
+        RANK_4.addComponents(RANK_4_BUTTONS);
+        RANK_5.addComponents(RANK_5_BUTTONS);
+        // ALL.addComponents(ALL_BUTTONS);
 
         await interaction.editReply({
             content: `:white_check_mark::white_check_mark::ballot_box_with_check: Setting up buttons...`,
@@ -221,9 +297,21 @@ module.exports = {
                 .setTimestamp();
 
         EMBED.addFields(
-            {name: `${PLAYER1.character.name} HP`, value: `${FIGHT_DATA.player1.character.health[0]}/100`, inline: true},
-            {name: `${PLAYER2.character.name} HP`, value: `${FIGHT_DATA.player2.character.health[0]}/100`, inline: true},
-            {name: `Turn`, value: `It's <@${USER_ID}>'s turn (${PLAYER1.character.name})`, inline: true},
+            {
+                name: `${PLAYER1.character.name} HP`,
+                value: `${FIGHT_DATA.player1.character.health[0]}/100`,
+                inline: true
+            },
+            {
+                name: `${PLAYER2.character.name} HP`,
+                value: `${FIGHT_DATA.player2.character.health[0]}/100`,
+                inline: true
+            },
+            {
+                name: `Turn`,
+                value: `It's <@${USER_ID}>'s turn (${PLAYER1.character.name})`,
+                inline: true
+            },
         );
 
         // Link to the thread
@@ -233,6 +321,6 @@ module.exports = {
         });
 
         await THREAD.send(`<@${USER_ID}> challenged <@${OPPONENT_ID}> to a fight!`);
-        return THREAD.send({embeds: [EMBED], components: [RANK_1, RANK_2, RANK_3, ALL]});
+        return THREAD.send({embeds: [EMBED], components: [RANK_1, RANK_2, RANK_3, RANK_4, RANK_5]});
     }
 }

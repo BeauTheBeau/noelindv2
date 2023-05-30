@@ -21,7 +21,39 @@
       "max": 21
     }
   },
+  "success": {
+    "1": 0.25,
+    "2": 0.5,
+    "3": 0.75,
+    "4": 1
+  },
   "rank_1": [
+    {
+      "name": "Surrender",
+      "short": "surrender",
+      "description": "The user surrenders to their opponent, ending the fight.",
+      "possible_injuries": [
+        "None"
+      ],
+      "action_text": [],
+      "fail_text": [],
+      "damage_level": 0,
+      "success_rate": 0
+    },
+
+    {
+      "name": "Draw",
+      "short": "force",
+      "description": "Fight force ended, draw.",
+      "possible_injuries": [
+        "None"
+      ],
+      "action_text": [],
+      "fail_text": [],
+      "damage_level": 0,
+      "success_rate": 0
+    },
+
     {
       "short": "basic_bite",
       "name": "Basic Bite",
@@ -40,7 +72,7 @@
         "<opponent> dodged <self>'s bite, causing <self> to fall over!"
       ],
       "damage_level": 1,
-      "success_rate": 3
+      "success_rate": 2
     },
     {
       "short": "basic_claw",
@@ -60,77 +92,251 @@
         "<opponent> dodged <self>'s scratch, causing <self> to fall over!"
       ],
       "damage_level": 1,
-      "success_rate": 3
+      "success_rate": 2
+    },
+    {
+      "name": "Frontal Blow",
+      "short": "frontal_blow",
+      "description": "The user swipes at an opponent with one of their forepaws.",
+      "possible_injuries": [
+        "Minor cuts",
+        "Minor bruising"
+      ],
+      "action_text": [
+        "<opponent> was swiped at by <self>, dealing <damage> damage!",
+        "<self> swiped at <opponent>, dealing <damage> damage!",
+        "<opponent> was swiped at by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> swiped at <opponent>, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> tried to swipe at <opponent>, but missed!",
+        "<opponent> dodged <self>'s swipe, causing <self> to fall over!"
+      ],
+      "damage_level": 1,
+      "success_rate": 2
     }
   ],
   "rank_2": [
     {
       "short": "tackle",
       "name": "Tackle",
-        "possible_injuries": [
-            "Minor bruising",
-            "Minor scratch",
-            "Medium scratch",
-            "Medium bruising"
-        ],
-        "action_text": [
-            "<opponent> was tackled by <self>, dealing <damage> damage!",
-            "<self> tackled <opponent>, dealing <damage> damage!",
-            "<opponent> was tackled by <self>, dealing <damage> damage and causing <injury>!",
-            "<self> tackled <opponent>, dealing <damage> damage and causing <injury>!"
-        ],
+      "possible_injuries": [
+        "Minor bruising",
+        "Minor scratch",
+        "Medium scratch",
+        "Medium bruising"
+      ],
+      "action_text": [
+        "<opponent> was tackled by <self>, dealing <damage> damage!",
+        "<self> tackled <opponent>, dealing <damage> damage!",
+        "<opponent> was tackled by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> tackled <opponent>, dealing <damage> damage and causing <injury>!"
+      ],
       "fail_text": [
         "<self> tried to tackle <opponent>, but missed!",
         "<opponent> dodged <self>'s tackle, causing <self> to fall over!"
       ],
-        "damage_level": 1,
-        "success_rate": 3
+      "damage_level": 1,
+      "success_rate": 3
     },
     {
-        "short": "throw",
+      "short": "throw",
       "name": "Throw",
-        "possible_injuries": [
-            "Minor bruising",
-            "Minor scratch",
-            "Medium scratch",
-            "Medium bruising"
-        ],
-        "action_text": [
-            "<self> propelled <opponent> through the air, dealing <damage> damage!",
-            "<self> threw <opponent>, dealing <damage> damage!",
-            "<opponent> was propelled through the air by <self>, dealing <damage> damage and causing <injury>!",
-            "<self> threw <opponent>, dealing <damage> damage and causing <injury>!"
-        ],
-        "fail_text": [
-            "<self> tried to throw <opponent>, couldn't get a good grip!",
-            "<self> tried to throw <opponent>, but <opponent> wiggled free!"
-        ],
-        "damage_level": 2,
-        "success_rate": 2
+      "possible_injuries": [
+        "Minor bruising",
+        "Minor scratch",
+        "Medium scratch",
+        "Medium bruising"
+      ],
+      "action_text": [
+        "<self> propelled <opponent> through the air, dealing <damage> damage!",
+        "<self> threw <opponent>, dealing <damage> damage!",
+        "<opponent> was propelled through the air by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> threw <opponent>, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> tried to throw <opponent>, couldn't get a good grip!",
+        "<self> tried to throw <opponent>, but <opponent> wiggled free!"
+      ],
+      "damage_level": 2,
+      "success_rate": 2
+    },
+    {
+      "name": "Basic Kick",
+      "short": "basic_kick",
+      "description": "The user kicks at an opponent with one of their hind legs.",
+      "possible_injuries": [
+        "Minor bruising",
+        "Minor cuts",
+        "Broken ribs"
+      ],
+      "action_text": [
+        "<opponent> was kicked by <self>, dealing <damage> damage!",
+        "<self> kicked <opponent>, dealing <damage> damage!",
+        "<opponent> was kicked by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> kicked <opponent>, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_test": [
+        "<self> tried to kick <opponent>, but missed!",
+        "<opponent> dodged <self>'s kick, causing <self> to fall over!"
+      ],
+      "damage_level": 1,
+      "success_rate": 2
+    },
+    {
+      "name": "Rearing Strike",
+      "short": "rearing_strike",
+      "description": "The user rears up on their hind legs and uses their weight to strike downwards at an opponent's face.",
+      "possible_injuries": [
+        "Minor bruising",
+        "Minor cuts",
+        "Medium bruising",
+        "Medium cuts",
+        "Injury to eyes",
+        "Broken nose"
+      ],
+      "action_text": [
+        "<opponent> was struck by <self>, dealing <damage> damage!",
+        "<self> struck <opponent>, dealing <damage> damage!",
+        "<opponent> was struck by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> struck <opponent>, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> tried to strike <opponent>, but missed!",
+        "<opponent> dodged <self>'s strike, causing <self> to fall over!"
+      ],
+      "damage_level": 3,
+      "success_rate": 2
     }
   ],
   "rank_3": [
     {
       "short": "biteshake",
       "name": "Bite n' Shake",
-        "possible_injuries": [
-            "Minor bite wound",
-            "Medium bite wound",
-            "Infection from bite"
-        ],
-        "action_text": [
-            "<opponent> was bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
-            "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!",
-            "<opponent> got bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
-            "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!"
-        ],
-        "fail_text": [
-            "<self> bit <opponent> and tried to shake them around, but couldn't get a good grip!",
-            "<self> bit <opponent> and tried to shake them around, but <opponent> wiggled free of their grasp!",
-            "<self> tried to bite <opponent> and shake them around, but missed!"
-        ],
-        "damage_level": 2,
-        "success_rate": 1
+      "possible_injuries": [
+        "Minor bite wound",
+        "Medium bite wound",
+        "Infection from bite"
+      ],
+      "action_text": [
+        "<opponent> was bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!",
+        "<opponent> got bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> bit <opponent> and tried to shake them around, but couldn't get a good grip!",
+        "<self> bit <opponent> and tried to shake them around, but <opponent> wiggled free of their grasp!",
+        "<self> tried to bite <opponent> and shake them around, but missed!"
+      ],
+      "damage_level": 2,
+      "success_rate": 1
+    },
+    {
+      "name": "Knock and Tumble",
+      "short": "knock_and_tumble",
+      "description": "The user knocks the opponent off balance, causing them to fall over.",
+      "possible_injuries": [
+        "Minor bruising",
+        "Spraining",
+        "Dislocation of limb"
+      ],
+      "action_text": [
+        "<opponent> was knocked over by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> knocked <opponent> over, dealing <damage> damage and causing <injury>!",
+        "<opponent> was knocked over by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> knocked <opponent> over, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> tried to knock <opponent> over, but missed!",
+        "<opponent> dodged <self>'s knock, causing <self> to fall over!"
+      ],
+      "damage_level": 1,
+      "success_rate": 3
+    },
+    {
+      "name": "Leap and Hold",
+      "short": "leap_and_hold",
+      "description": "The user leaps on top of an opponent and bites their scruff to throw them off balance. May result in puncture wounds, gashes and cuts",
+      "possible_injuries": [
+        "Puncture wounds",
+        "Minor gashes",
+        "Minor cuts",
+        "Medium gashes",
+        "Medium cuts",
+        "Infection from bite"
+      ],
+      "action_text": [
+        "<opponent> was bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!",
+        "<opponent> got bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> bit <opponent> and tried to shake them around, but couldn't get a good grip!",
+        "<self> bit <opponent> and tried to shake them around, but <opponent> wiggled free of their grasp!",
+        "<self> tried to bite <opponent> and shake them around, but missed!"
+      ],
+      "damage_level": 2,
+      "success_rate": 2
+    }
+  ],
+  "rank_4": [
+    {
+      "name": "Muzzle Grab",
+      "short": "muzzle_grab",
+      "description": "The user grabs the opponent's muzzle in a bite. May result in gashes, broken bones and tooth loss.",
+      "possible_injuries": [
+        "Minor gashes",
+        "Minor cuts",
+        "Medium gashes",
+        "Medium cuts",
+        "Broken jaw",
+        "Broken teeth",
+        "Infection from bite"
+      ],
+      "action_text": [
+        "<opponent> was bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!",
+        "<opponent> got bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> bit <opponent> and tried to shake them around, but couldn't get a good grip!",
+        "<self> bit <opponent> and tried to shake them around, but <opponent> wiggled free of their grasp!",
+        "<self> tried to bite <opponent> and shake them around, but missed!"
+      ],
+      "damage_level": 4,
+      "success_rate": 2
+    }
+  ],
+  "rank_5": [
+    {
+      "name": "Slam",
+      "short": "slam",
+      "description": "The user rams in the ops, attacking with either their claw or biting. May result in broken bones, gashes, lacerations, puncture wounds and cuts.",
+      "possible_injuries": [
+        "Minor gashes",
+        "Minor cuts",
+        "Medium gashes",
+        "Medium cuts",
+        "Broken bones",
+        "Puncture wounds",
+        "Infection from bite"
+      ],
+      "action_text": [
+        "<opponent> was bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!",
+        "<opponent> got bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
+        "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!"
+      ],
+      "fail_text": [
+        "<self> bit <opponent> and tried to shake them around, but couldn't get a good grip!",
+        "<self> bit <opponent> and tried to shake them around, but <opponent> wiggled free of their grasp!",
+        "<self> tried to bite <opponent> and shake them around, but missed!"
+      ],
+      "damage_level": 5,
+      "success_rate": 3
     }
   ]
 }

@@ -1,23 +1,32 @@
 {
-    "xp_blacklist": [
-        "1099459491029848125"
-    ],
-    "lekars": [],
-    "SHOP": {
-        "dsa": {
-            "description": "43343dsa",
-            "price": 54,
-            "stock": 454
-        },
-        "beau": {
-            "description": "cat!!!",
-            "price": 600,
-            "stock": -1
-        },
-        "testing": {
-            "description": "testing cool 16 char len descriptions please dont break okay thank you noelind bot",
-            "price": 1,
-            "stock": -1
-        }
+  "xp_blacklist": [
+    "1099459491029848125"
+  ],
+  "lekars": [
+    {
+      "name": "Arkane",
+      "user": "501423235854893066"
+    },
+    {
+      "name": "Beau2",
+      "user": "729567972070391848"
     }
+  ],
+  "SHOP": {
+    "dsa": {
+      "description": "43343dsa",
+      "price": 54,
+      "stock": 454
+    },
+    "beau": {
+      "description": "cat!!!",
+      "price": 600,
+      "stock": -1
+    },
+    "testing": {
+      "description": "testing cool 16 char len descriptions please dont break okay thank you noelind bot",
+      "price": 1,
+      "stock": -1
+    }
+  }
 }

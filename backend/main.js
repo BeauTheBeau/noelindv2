@@ -11,6 +11,7 @@ const
     FS = require(`fs`);
 // const MOVES = require("../data/moves.json");
 
+const rank_thresholds = [400, 800, 1400];
 
 require(`dotenv`).config();
 
@@ -42,7 +43,7 @@ function createProfile(userID) {
 
     console.log(`Created profile for ${userID}`);
     console.log("========================================");
-}
+}6
 
 async function load_commands(category) {
 
@@ -121,19 +122,6 @@ client.on(Events.InteractionCreate, async interaction => {
         console.log("========================================");
     }
 
-    // Refresh commands
-    client.commands.clear();
-
-    // Load commands
-    // Loop through all folders in ./commands
-    const
-        command_folders = require(`fs`).readdirSync(`commands/`),
-        event_files = require(`fs`).readdirSync(`events/`).filter(file => file.endsWith(`.js`));
-
-    for (const folder of command_folders) {
-        await load_commands(folder);
-    }
-
     switch (interaction.type) {
 
         case 2:
@@ -185,10 +173,13 @@ client.on(Events.InteractionCreate, async interaction => {
                 // =================
                 // Prepare Variables
 
-                // Custom ID
-                // f:basic_bite&?f=[fight id]-<timestamp>
+                // Custom ID - fight fightID isSpar
+                // f:basic_bite&?f=[fight id]-<timestamp>&isSpar=[true/false]
+                // realworld ex
+                // f:basic_bite&?f=729567972070391848-729567972070391848-1685468616237&isSpar=true
                 // Fight ID
                 // <player 1 id>-<player 2 id>-<timestamp>
+
 
                 // Get fight data
                 let fight_data;
@@ -199,8 +190,10 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 // Get fight ID and other relevant data
                 const
-                    fightID = interaction.customId.split(`&?f=`)[1],
-                    move = interaction.customId.split(`&`)[0].split(`:`)[1];
+                    fightID = interaction.customId.split(`&?f=`)[1].split(`&isSpar=`)[0],
+                    move = interaction.customId.split(`&`)[0].split(`:`)[1],
+                    isSpar = interaction.customId.split(`&`)[1].split(`=`)[1] === `true`,
+                    type = isSpar ? `spar` : `fight`;
 
                 try {
                     fight_data = await fightModel.findOne({combatID: fightID});
@@ -212,7 +205,6 @@ client.on(Events.InteractionCreate, async interaction => {
                         content: `There was an error while executing this command! This incident has been reported.`,
                         ephemeral: false
                     });
-
                     return interaction.followUp({
                         content: `\`\`\`${err.stack}\`\`\``
                     });
@@ -220,7 +212,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 if (!fight_data) {
                     await interaction.reply({
-                        content: `This fight doesn't exist!`,
+                        content: `This ${type} does not exist! (\`${interaction.customId}\`)`,
                         ephemeral: true
                     });
                     return;
@@ -231,21 +223,22 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 if (fight_data.winner === "force_stopped") {
                     await interaction.reply({
-                        content: `This fight has been force stopped!`,
+                        content: `This ${type} has been force stopped!`,
                         ephemeral: true
                     });
                     return;
                 }
+
                 if (fight_data.winner !== null) {
                     await interaction.reply({
-                        content: `This fight is already over, ${fight_data.winner} won!`,
+                        content: `This ${type} is already over, ${fight_data.winner} won!`,
                         ephemeral: true
                     });
                     return;
                 }
                 if (fightID.split(`-`)[0] !== interaction.user.id && fightID.split(`-`)[1] !== interaction.user.id) {
                     await interaction.reply({
-                        content: `You are not in this fight! It is between <@${fightID.split(`-`)[0]}> and <@${fightID.split(`-`)[1]}>`,
+                        content: `You are not in this ${type}! It is between <@${fightID.split(`-`)[0]}> and <@${fightID.split(`-`)[1]}>`,
                         ephemeral: true
                     });
                     return;
@@ -289,7 +282,6 @@ client.on(Events.InteractionCreate, async interaction => {
                     my_char.last.surrender = Date.now();
                     my_char.last.fight = Date.now();
                     my_char.last.loss = Date.now();
-
 
                     opponent_char.stats.wins += 1;
                     opponent_char.stats.fights += 1;
@@ -409,7 +401,7 @@ client.on(Events.InteractionCreate, async interaction => {
                         await my_profile.save();
                         await opponent_profile.save();
 
-                        await interaction.followUp({content: `# The fight ended in a draw!`});
+                        await interaction.followUp({content: `# The ${type} ended in a draw!`});
                         const og_message = await interaction.message
                         const og_embed = await og_message.embeds[0]
 
@@ -437,166 +429,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     }
                 }
 
-                const moves = {
-                    "damage_ranges": {
-                        "level_1": {
-                            "min": 1,
-                            "max": 9
-                        },
-                        "level_2": {
-                            "min": 5,
-                            "max": 11
-                        },
-                        "level_3": {
-                            "min": 9,
-                            "max": 13
-                        },
-                        "level_4": {
-                            "min": 13,
-                            "max": 17
-                        },
-                        "level_5": {
-                            "min": 17,
-                            "max": 21
-                        }
-                    },
-                    "rank_1": [
-                        {
-                            "short": "basic_bite",
-                            "name": "Basic Bite",
-                            "possible_injuries": [
-                                "Minor bite wound",
-                                "Infection from bite",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                            ],
-                            "action_text": [
-                                "<opponent> was bitten with viciously sharp fangs by <self>, dealing <damage> damage!",
-                                "<self> bit <opponent> with viciously sharp fangs, dealing <damage> damage!",
-                                "<opponent> was bitten with viciously sharp fangs by <self>, dealing <damage> damage and causing <injury>!",
-                                "<self> bit <opponent> with viciously sharp fangs, dealing <damage> damage and causing <injury>!"
-                            ],
-                            "fail_text": [
-                                "<self> tried to bite <opponent>, but missed!",
-                                "<self> tried to bite <opponent>, but missed and fell over!",
-                                "<opponent> dodged <self>'s bite, causing <self> to fall over!"
-                            ],
-                            "damage_level": 1,
-                            "success_rate": 3
-                        },
-                        {
-                            "short": "basic_claw",
-                            "name": "Basic Claw",
-                            "possible_injuries": [
-                                "Minor scratch",
-                                "Infection from scratch",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                            ],
-                            "action_text": [
-                                "<opponent> was scratched by <self>, dealing <damage> damage!",
-                                "<self> scratched <opponent>, dealing <damage> damage!",
-                                "<opponent> was scratched by <self>, dealing <damage> damage and causing <injury>!",
-                                "<self> scratched <opponent>, dealing <damage> damage and causing <injury>!"
-                            ],
-                            "fail_text": [
-                                "<self> tried to scratch <opponent>, but missed!",
-                                "<self> tried to scratch <opponent>, but missed and fell over!",
-                                "<opponent> dodged <self>'s scratch, causing <self> to fall over!"
-                            ],
-                            "damage_level": 1,
-                            "success_rate": 3
-                        }
-                    ],
-                    "rank_2": [
-                        {
-                            "short": "tackle",
-                            "name": "Tackle",
-                            "possible_injuries": [
-                                "Minor bruising",
-                                "Minor scratch",
-                                "Medium scratch",
-                                "Medium bruising",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                            ],
-                            "action_text": [
-                                "<opponent> was tackled by <self>, dealing <damage> damage!",
-                                "<self> tackled <opponent>, dealing <damage> damage!",
-                                "<opponent> was tackled by <self>, dealing <damage> damage and causing <injury>!",
-                                "<self> tackled <opponent>, dealing <damage> damage and causing <injury>!"
-                            ],
-                            "fail_text": [
-                                "<self> tried to tackle <opponent>, but missed!",
-                                "<self> tried to tackle <opponent>, but missed and fell over!",
-                                "<opponent> dodged <self>'s tackle, causing <self> to fall over!"
-                            ],
-                            "damage_level": 1,
-                            "success_rate": 3
-                        },
-                        {
-                            "short": "throw",
-                            "name": "Throw",
-                            "possible_injuries": [
-                                "Minor bruising",
-                                "Minor scratch",
-                                "Medium scratch",
-                                "Medium bruising",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                                "Nothing",
-                            ],
-                            "action_text": [
-                                "<self> propelled <opponent> through the air, dealing <damage> damage!",
-                                "<self> threw <opponent>, dealing <damage> damage!",
-                                "<opponent> was propelled through the air by <self>, dealing <damage> damage and causing <injury>!",
-                                "<self> threw <opponent>, dealing <damage> damage and causing <injury>!"
-                            ],
-                            "fail_text": [
-                                "<self> tried to throw <opponent>, couldn't get a good grip!",
-                                "<self> tried to throw <opponent>, but <opponent> wiggled free!"
-                            ],
-                            "damage_level": 2,
-                            "success_rate": 2
-                        }
-                    ],
-                    "rank_3": [
-                        {
-                            "short": "biteshake",
-                            "name": "Bite n' Shake",
-                            "possible_injuries": [
-                                "Minor bite wound",
-                                "Medium bite wound",
-                                "Infection from bite",
-                                "Nothing",
-                                "Nothing"
-                            ],
-                            "action_text": [
-                                "<opponent> was bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
-                                "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!",
-                                "<opponent> got bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
-                                "<self> bit <opponent> and shook them around, dealing <damage> damage and causing <injury>!"
-                            ],
-                            "fail_text": [
-                                "<self> bit <opponent> and tried to shake them around, but couldn't get a good grip!",
-                                "<self> bit <opponent> and tried to shake them around, but <opponent> wiggled free of their grasp!",
-                                "<self> tried to bite <opponent> and shake them around, but missed!"
-                            ],
-                            "damage_level": 2,
-                            "success_rate": 1
-                        }
-                    ]
-                }
+                const moves = require(`../data/moves.json`)
 
                 // =================
                 // Get move details
@@ -611,11 +444,8 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 // Loop through the moves and find the move with the matching short name, assign it to move_data
 
-                for (let i = 0; i < moves[`rank_${rank}`].length; i++) {
-                    if (moves[`rank_${rank}`][i].short === move) {
-                        move_data = moves[`rank_${rank}`][i];
-                    }
-                }
+                for (let i = 0; i < moves[`rank_${rank}`].length; i++) if (moves[`rank_${rank}`][i].short === move) move_data = moves[`rank_${rank}`][i];
+
 
                 // =================
                 // Calculate damage
@@ -721,7 +551,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                             const
                                 history_embed_1 = new EmbedBuilder()
-                                    .setTitle("Fight History")
+                                    .setTitle(`${type} History`)
                                     .setDescription(history_text.slice(0, 4000))
                                     .setTimestamp(),
                                 history_embed_2 = new EmbedBuilder()
