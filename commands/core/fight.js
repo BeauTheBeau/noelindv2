@@ -90,10 +90,6 @@ module.exports = {
             }
         }
 
-
-
-
-
         const
             COMBAT_ID = `${USER_ID}-${OPPONENT_ID}-${Date.now()}`,
             PLAYER1 = {
@@ -201,7 +197,7 @@ module.exports = {
                     .setStyle(DISCORD.ButtonStyle.Danger),
 
                 await new DISCORD.ButtonBuilder()
-                    .setLabel(`Force End`)
+                    .setLabel(`Draw`)
                     .setCustomId(`f:force&?f=${COMBAT_ID}`)
                     .setStyle(DISCORD.ButtonStyle.Danger)
             ];
@@ -225,8 +221,8 @@ module.exports = {
                 .setTimestamp();
 
         EMBED.addFields(
-            {name: `${PLAYER1.character.name} HP`, value: `${FIGHT_DATA.p1hp}/100`, inline: true},
-            {name: `${PLAYER2.character.name} HP`, value: `${FIGHT_DATA.p2hp}/100`, inline: true},
+            {name: `${PLAYER1.character.name} HP`, value: `${FIGHT_DATA.player2.character.health[0]}/100`, inline: true},
+            {name: `${PLAYER2.character.name} HP`, value: `${FIGHT_DATA.player1.character.health[0]}/100`, inline: true},
             {name: `Turn`, value: `It's <@${USER_ID}>'s turn (${PLAYER1.character.name})`, inline: true},
         );
 

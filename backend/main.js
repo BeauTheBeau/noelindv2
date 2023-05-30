@@ -283,11 +283,12 @@ client.on(Events.InteractionCreate, async interaction => {
                     fight_data.loser = my_data.userID;
 
                     // Update the user.characters[active].stats.surrenders
-                    my_char.stats.surrenders += 1;
+                    my_char.stats.surrender += 1;
                     my_char.stats.losses += 1;
                     my_char.stats.fights += 1;
                     my_char.last.surrender = Date.now();
                     my_char.last.fight = Date.now();
+                    my_char.last.loss = Date.now();
 
 
                     opponent_char.stats.wins += 1;
@@ -304,13 +305,13 @@ client.on(Events.InteractionCreate, async interaction => {
                         my_profile.characters[my_char.name] = my_char;
                         opponent_profile.characters[opponent_char.name] = opponent_char;
 
-                        await my_profile.markModified("characters");
-                        await opponent_profile.markModified("characters");
+                        await my_profile.markModified(`characters.${my_char.name}.stats`);
+                        await my_profile.markModified(`characters.${my_char.name}.last`);
+                        await opponent_profile.markModified(`characters.${opponent_char.name}.stats`);
+                        await opponent_profile.markModified(`characters.${opponent_char.name}.last`);
 
                         await my_profile.save();
                         await opponent_profile.save();
-
-
 
                         await interaction.reply({
                             content: `<@${opponent_data.userID}> won! <@${my_data.userID}> surrendered!`,
@@ -366,18 +367,67 @@ client.on(Events.InteractionCreate, async interaction => {
                     fight_data.winner = "force_stopped";
                     fight_data.loser = "force_stopped";
 
+                    // Update the user.characters[active].stats.draws
+                    my_char.stats.draws += 1;
+                    my_char.last.draw = Date.now();
+
+                    opponent_char.stats.draws += 1;
+                    opponent_char.last.draw = Date.now();
+
                     try {
                         await fight_data.save();
+
+                        const my_profile = await profileModel.findOne({userID: my_data.userID});
+                        const opponent_profile = await profileModel.findOne({userID: opponent_data.userID});
+
+                        my_profile.characters[my_char.name] = my_char;
+                        opponent_profile.characters[opponent_char.name] = opponent_char;
+
+                        await my_profile.markModified(`characters.${my_char.name}.stats`);
+                        await my_profile.markModified(`characters.${my_char.name}.last`);
+                        await opponent_profile.markModified(`characters.${opponent_char.name}.stats`);
+                        await opponent_profile.markModified(`characters.${opponent_char.name}.last`);
+
+                        await my_profile.save();
+                        await opponent_profile.save();
+
+                        fight_data.winner = "force_stopped";
+                        fight_data.loser = "force_stopped";
+
+                        await fight_data.save();
+
+                        // Award XP
                         await interaction.reply({
-                            content: `The fight has been force stopped, no XP will be rewarded.`,
+                            content: `# XP Rewards\n<@${opponent_data.userID}>: 20 XP\n<@${my_data.userID}>: 20 XP`
                         });
+
+                        my_char.rank[0] += 20;
+                        opponent_char.rank[0] += 20;
+
+                        await my_profile.markModified(`characters.${my_char.name}.rank`);
+                        await opponent_profile.markModified(`characters.${opponent_char.name}.rank`);
+                        await my_profile.save();
+                        await opponent_profile.save();
+
+                        await interaction.followUp({content: `# The fight ended in a draw!`});
+                        const og_message = await interaction.message
+                        const og_embed = await og_message.embeds[0]
+
+                        const new_embed = EmbedBuilder.from(og_embed)
+                            .setTitle(`Force stopped - draw`)
+
+                        // Edit message
+                        return await og_message.edit({
+                            embeds: [new_embed]
+                        })
+
 
                     } catch (err) {
                         console.log(err);
                         console.log("========================================");
 
                         await interaction.reply({
-                            content: `There was an error while surrendering! This incident has been reported.`,
+                            content: `There was an error while drawing! This incident has been reported.`,
                             ephemeral: false
                         });
 
@@ -417,9 +467,9 @@ client.on(Events.InteractionCreate, async interaction => {
                             "possible_injuries": [
                                 "Minor bite wound",
                                 "Infection from bite",
-                                "None",
-                                "None",
-                                "None",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
                             ],
                             "action_text": [
                                 "<opponent> was bitten with viciously sharp fangs by <self>, dealing <damage> damage!",
@@ -441,10 +491,10 @@ client.on(Events.InteractionCreate, async interaction => {
                             "possible_injuries": [
                                 "Minor scratch",
                                 "Infection from scratch",
-                                "None",
-                                "None",
-                                "None",
-                                "None",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
                             ],
                             "action_text": [
                                 "<opponent> was scratched by <self>, dealing <damage> damage!",
@@ -470,12 +520,12 @@ client.on(Events.InteractionCreate, async interaction => {
                                 "Minor scratch",
                                 "Medium scratch",
                                 "Medium bruising",
-                                "None",
-                                "None",
-                                "None",
-                                "None",
-                                "None",
-                                "None",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
                             ],
                             "action_text": [
                                 "<opponent> was tackled by <self>, dealing <damage> damage!",
@@ -499,12 +549,12 @@ client.on(Events.InteractionCreate, async interaction => {
                                 "Minor scratch",
                                 "Medium scratch",
                                 "Medium bruising",
-                                "None",
-                                "None",
-                                "None",
-                                "None",
-                                "None",
-                                "None",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
+                                "Nothing",
                             ],
                             "action_text": [
                                 "<self> propelled <opponent> through the air, dealing <damage> damage!",
@@ -528,8 +578,8 @@ client.on(Events.InteractionCreate, async interaction => {
                                 "Minor bite wound",
                                 "Medium bite wound",
                                 "Infection from bite",
-                                "None",
-                                "None"
+                                "Nothing",
+                                "Nothing"
                             ],
                             "action_text": [
                                 "<opponent> was bitten and tossed around by <self>, dealing <damage> damage and causing <injury>!",
@@ -681,9 +731,6 @@ client.on(Events.InteractionCreate, async interaction => {
                             await interaction.followUp({embeds: [history_embed_1]});
                             return await interaction.followUp({embeds: [history_embed_2]});
                     }
-
-
-
                 }
 
                 // Change turn to opponent (as string) and save
@@ -712,7 +759,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (my_data.userID === fight_data.player1.userID) {
                     embed.fields[0].value = `${my_char.health[0]}/${my_char.health[1]}`;
                     embed.fields[1].value = `${opponent_char.health[0]}/${opponent_char.health[1]}`;
-                } else {
+                }
+                else {
                     embed.fields[0].value = `${opponent_char.health[0]}/${opponent_char.health[1]}`;
                     embed.fields[1].value = `${my_char.health[0]}/${my_char.health[1]}`;
                 }

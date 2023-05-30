@@ -272,6 +272,16 @@ module.exports = {
 
             try {
 
+                function formatTimestamp(timestamp) {
+                    if (timestamp) {
+                        const validTimestamp = new Date(timestamp);
+                        if (!isNaN(validTimestamp)) {
+                            return "<t:" + Math.floor(timestamp / 1000) + ":R>";
+                        }
+                    }
+                    return "Never";
+                }
+
                 const
                     CHARACTER = CHARACTERS[NAME],
                     EMBED = new DISCORD.EmbedBuilder()
@@ -287,15 +297,15 @@ module.exports = {
                             "Fights: " + CHARACTER.stats.fights + "\n" +
                             "Wins: " + CHARACTER.stats.wins + "\n" +
                             "Losses: " + CHARACTER.stats.losses + "\n" +
-                            "Draws: " + CHARACTER.stats.draws + "\n" +
+                            "Draws: " + CHARACTER.stats.draw + "\n" +
                             "Surrenders: " + CHARACTER.stats.surrender + "\n\n" +
                             "## Last...\n" +
-                                    "Ate: <t:" + (Math.floor(CHARACTER.last.ate/1000   ) || "Never") + ":R>\n" +
-                                 "Fought: <t:" + (Math.floor(CHARACTER.last.fight/1000 ) || "Never") + ":R>\n" +
-                                    "Won: <t:" + (Math.floor(CHARACTER.last.win/1000   ) || "Never") + ":R>\n" +
-                                   "Lost: <t:" + (Math.floor(CHARACTER.last.loss/1000  ) || "Never") + ":R>\n" +
-                                   "Drew: <t:" + (Math.floor(CHARACTER.last.draw/1000  ) || "Never") + ":R>\n" +
-                            "Surrendered: <t:" + (Math.floor(CHARACTER.last.surrender/1000 ) || "Never") + ":R>"
+                            "Ate: " + formatTimestamp(CHARACTER.last.ate) + "\n" +
+                            "Fought: " + formatTimestamp(CHARACTER.last.fight) + "\n" +
+                            "Won: " + formatTimestamp(CHARACTER.last.win) + "\n" +
+                            "Lost: " + formatTimestamp(CHARACTER.last.loss) + "\n" +
+                            "Draw: " + formatTimestamp(CHARACTER.last.draw) + "\n" +
+                            "Surrendered: " + formatTimestamp(CHARACTER.last.surrender)
                         );
 
                 await interaction.editReply({
