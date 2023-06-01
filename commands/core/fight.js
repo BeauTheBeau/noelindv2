@@ -67,7 +67,7 @@ module.exports = {
         });
 
         await interaction.editReply({
-            content: `:white_check_mark::ballot_box_with_check::ballot_box_with_check: Prechecks passed, setting up ${type}...`,
+            content: `:white_check_mark::ballot_box_with_check::ballot_box_with_check: Prechecks passed, setting up ${TYPE}...`,
             ephemeral: true
         });
 
@@ -86,14 +86,14 @@ module.exports = {
         for (const FIGHT of await FIGHT_MODEL.find()) {
             if (FIGHT.player1.userID === USER_ID || FIGHT.player2.userID === USER_ID) {
                 if (FIGHT.winner === null) return interaction.editReply({
-                    content: `You are already in a ${type}!`,
+                    content: `You are already in a ${TYPE}!`,
                     ephemeral: true
                 });
             }
 
             if (FIGHT.player1.userID === OPPONENT_ID || FIGHT.player2.userID === OPPONENT_ID) {
                 if (FIGHT.winner === null) return interaction.editReply({
-                    content: `That user is already in a ${type}!`,
+                    content: `That user is already in a ${TYPE}!`,
                     ephemeral: true
                 });
             }
@@ -138,7 +138,7 @@ module.exports = {
             THREAD = await interaction.channel.threads.create({
                 name: `Fight: ${PROFILE.characters[PROFILE.characters.active].name} vs ${OPPONENT_PROFILE.characters[CHARACTER].name}`,
                 autoArchiveDuration: 60,
-                reason: `${type} thread`
+                reason: `${TYPE} thread`
             }),
             THREAD_ID = THREAD.id;
 
@@ -284,7 +284,7 @@ module.exports = {
         const
             EMBED = new DISCORD.EmbedBuilder()
                 .setTitle(`Fight: ${PLAYER1.character.name} and ${PLAYER2.character.name}`)
-                .setDescription(`${type.charAt(0).toUpperCase() + type.slice(1)} started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}\n# History
+                .setDescription(`${TYPE.charAt(0).toUpperCase() + TYPE.slice(1)} started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}\n# History
                 - No history yet`)
                 .setTimestamp();
 
@@ -308,12 +308,12 @@ module.exports = {
 
         // Link to the thread
         await interaction.editReply({
-            content: `Created a thread for the ${type}: <#${THREAD_ID}>`,
+            content: `Created a thread for the ${TYPE}: <#${THREAD_ID}>`,
             ephemeral: true
         });
 
         await THREAD.send({
-            content: `${type.charAt(0).toUpperCase() + type.slice(1)}  started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}`,
+            content: `${TYPE.charAt(0).toUpperCase() + TYPE.slice(1)}  started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}`,
             components: [ALL]
         });
 
