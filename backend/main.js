@@ -322,8 +322,8 @@ client.on(Events.InteractionCreate, async interaction => {
                             history_entry = {
                                 "turn": [my_char.name, opponent_char.name],
                                 "move": move,
-                                "damage": damage,
-                                "injury": injury,
+                                "damage": 0,
+                                "injury": "nothing",
                                 "success": success
                             };
 

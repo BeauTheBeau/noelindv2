@@ -2,7 +2,9 @@
 
 const
     DISCORD = require('discord.js'),
-    PROFILE_MODEL = require('../../schemas/profile.js');
+    PROFILE_MODEL = require('../../schemas/profile.js'),
+    EAT_COOLDOWN = 60 * 15, // 1 hour
+    EAT_COOLDOWN_LOGS = new DISCORD.Collection();
 
 module.exports = {
 
@@ -297,7 +299,7 @@ module.exports = {
                             "Fights: " + CHARACTER.stats.fights + "\n" +
                             "Wins: " + CHARACTER.stats.wins + "\n" +
                             "Losses: " + CHARACTER.stats.losses + "\n" +
-                            "Draws: " + CHARACTER.stats.draw + "\n" +
+                            "Draws: " + CHARACTER.stats.draws + "\n" +
                             "Surrenders: " + CHARACTER.stats.surrender + "\n\n" +
                             "## Last...\n" +
                             "Ate: " + formatTimestamp(CHARACTER.last.ate) + "\n" +
@@ -334,6 +336,10 @@ module.exports = {
                 content: `:negative_squared_cross_mark::ballot_box_with_check: You don't have a character with that name`,
                 ephemeral: true
             });
+            if (EAT_COOLDOWN_LOGS[NAME]) return interaction.editReply({
+                content: `:negative_squared_cross_mark::ballot_box_with_check: You can't eat yet, wait <t:${Math.floor(EAT_COOLDOWN_LOGS[NAME] / 1000) + EAT_COOLDOWN}:R>`,
+                ephemeral: true
+            });
             if (CHARACTERS[NAME].health[0] === CHARACTERS[NAME].health[1]) return interaction.editReply({
                 content: `:negative_squared_cross_mark::ballot_box_with_check: Your health is already full`,
                 ephemeral: true
@@ -365,6 +371,8 @@ module.exports = {
                 CHARACTERS[NAME].health[0] = HEALTH;
                 if (CHARACTERS[NAME].health[0] > CHARACTERS[NAME].health[1]) CHARACTERS[NAME].health[0] = CHARACTERS[NAME].health[1];
                 await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
+
+                EAT_COOLDOWN_LOGS[NAME] = Date.now();
 
                 await interaction.editReply({
                     content: `:white_check_mark::white_check_mark: You successfully ate!`,
