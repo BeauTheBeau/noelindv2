@@ -11,7 +11,7 @@ const
     FS = require(`fs`);
 // const MOVES = require("../data/moves.json");
 
-const rank_thresholds = [400, 800, 1400];
+const rank_thresholds = [200, 400, 800, 1100, 1400];
 
 require(`dotenv`).config();
 
@@ -43,7 +43,9 @@ function createProfile(userID) {
 
     console.log(`Created profile for ${userID}`);
     console.log("========================================");
-}6
+}
+
+6
 
 async function load_commands(category) {
 
@@ -176,7 +178,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 // Custom ID - fight fightID isSpar
                 // f:basic_bite&?f=[fight id]-<timestamp>&isSpar=[true/false]
                 // realworld ex
-                // f:basic_bite&?f=729567972070391848-729567972070391848-1685468616237&isSpar=true
+                // f:basic_bite&?f=729567974070391848-729567974070391848-1685468616237&isSpar=true
                 // Fight ID
                 // <player 1 id>-<player 2 id>-<timestamp>
 
@@ -309,7 +311,7 @@ client.on(Events.InteractionCreate, async interaction => {
                             content: `<@${opponent_data.userID}> won! <@${my_data.userID}> surrendered!`,
                         });
                         await interaction.followUp({
-                            content: `# XP Rewards\n<@${opponent_data.userID}>: 50 XP\n<@${my_data.userID}>: 20 XP`
+                            content: `# XP Rewards\n<@${opponent_data.userID}>: 70 XP\n<@${my_data.userID}>: 40 XP`
                         });
 
                         // Add to history
@@ -390,11 +392,11 @@ client.on(Events.InteractionCreate, async interaction => {
 
                         // Award XP
                         await interaction.reply({
-                            content: `# XP Rewards\n<@${opponent_data.userID}>: 20 XP\n<@${my_data.userID}>: 20 XP`
+                            content: `# XP Rewards\n<@${opponent_data.userID}>: 40 XP\n<@${my_data.userID}>: 40 XP`
                         });
 
-                        my_char.rank[0] += 20;
-                        opponent_char.rank[0] += 20;
+                        my_char.rank[0] += 40;
+                        opponent_char.rank[0] += 40;
 
                         await my_profile.markModified(`characters.${my_char.name}.rank`);
                         await opponent_profile.markModified(`characters.${opponent_char.name}.rank`);
@@ -549,17 +551,17 @@ client.on(Events.InteractionCreate, async interaction => {
                     // If the history exceeds 4000 characters, split it into multiple embeds
                     if (history_text.length > 4000) {
 
-                            const
-                                history_embed_1 = new EmbedBuilder()
-                                    .setTitle(`${type} History`)
-                                    .setDescription(history_text.slice(0, 4000))
-                                    .setTimestamp(),
-                                history_embed_2 = new EmbedBuilder()
-                                    .setDescription(history_text.slice(4000, history_text.length))
-                                    .setTimestamp();
+                        const
+                            history_embed_1 = new EmbedBuilder()
+                                .setTitle(`${type} History`)
+                                .setDescription(history_text.slice(0, 4000))
+                                .setTimestamp(),
+                            history_embed_2 = new EmbedBuilder()
+                                .setDescription(history_text.slice(4000, history_text.length))
+                                .setTimestamp();
 
-                            await interaction.followUp({embeds: [history_embed_1]});
-                            return await interaction.followUp({embeds: [history_embed_2]});
+                        await interaction.followUp({embeds: [history_embed_1]});
+                        return await interaction.followUp({embeds: [history_embed_2]});
                     }
                 }
 
@@ -589,8 +591,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (my_data.userID === fight_data.player1.userID) {
                     embed.fields[0].value = `${my_char.health[0]}/${my_char.health[1]}`;
                     embed.fields[1].value = `${opponent_char.health[0]}/${opponent_char.health[1]}`;
-                }
-                else {
+                } else {
                     embed.fields[0].value = `${opponent_char.health[0]}/${opponent_char.health[1]}`;
                     embed.fields[1].value = `${my_char.health[0]}/${my_char.health[1]}`;
                 }
@@ -649,10 +650,10 @@ client.on(Events.MessageCreate, async message => {
     if (message.author.bot) return;
     if (CONFIG.xp_blacklist.includes(message.channel.id)) return;
 
-    // Add random XP between 12 and 24, modified by message length (if message len is over 50, cap it)
+    // Add random XP between 12 and 24, modified by message length (if message len is over 70, cap it)
     const
         xp = Math.floor(Math.random() * 12) + 12,
-        length_modifier = message.content.length > 50 ? 50 : message.content.length,
+        length_modifier = message.content.length > 70 ? 70 : message.content.length,
         xp_modifier = Math.floor(length_modifier / 10),
         total_xp = xp + xp_modifier;
 
