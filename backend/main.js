@@ -197,9 +197,12 @@ client.on(Events.InteractionCreate, async interaction => {
                     isSpar = interaction.customId.split(`&`)[1].split(`=`)[1] === `true`,
                     type = isSpar ? `spar` : `fight`;
 
+                console.log(isSpar)
+
                 try {
                     fight_data = await fightModel.findOne({combatID: fightID});
-                } catch (err) {
+                }
+                catch (err) {
                     console.log(err);
                     console.log("========================================");
 
@@ -230,7 +233,6 @@ client.on(Events.InteractionCreate, async interaction => {
                     });
                     return;
                 }
-
                 if (fight_data.winner !== null) {
                     await interaction.reply({
                         content: `This ${type} is already over, ${fight_data.winner} won!`,

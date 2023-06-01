@@ -40,7 +40,8 @@ module.exports = {
             OPPONENT_ID = interaction.options.getUser('user').id,
             CHARACTER = interaction.options.getString('character'),
             PROFILE = await PROFILE_MODEL.findOne({userID: USER_ID}),
-            OPPONENT_PROFILE = await PROFILE_MODEL.findOne({userID: OPPONENT_ID});
+            OPPONENT_PROFILE = await PROFILE_MODEL.findOne({userID: OPPONENT_ID}),
+            TYPE = IS_SPAR ? 'spar' : 'fight';
 
         // Prechecks
         await interaction.reply({
@@ -66,7 +67,7 @@ module.exports = {
         });
 
         await interaction.editReply({
-            content: `:white_check_mark::ballot_box_with_check::ballot_box_with_check: Prechecks passed, setting up fight...`,
+            content: `:white_check_mark::ballot_box_with_check::ballot_box_with_check: Prechecks passed, setting up ${type}...`,
             ephemeral: true
         });
 
@@ -74,7 +75,7 @@ module.exports = {
             FIGHT = await FIGHT_MODEL.findOne({userID: USER_ID});
 
         if (FIGHT) return interaction.editReply({
-            content: 'You are already in a fight!',
+            content: `You are already in a fight!',
             ephemeral: true
         });
 
@@ -85,14 +86,14 @@ module.exports = {
         for (const FIGHT of await FIGHT_MODEL.find()) {
             if (FIGHT.player1.userID === USER_ID || FIGHT.player2.userID === USER_ID) {
                 if (FIGHT.winner === null) return interaction.editReply({
-                    content: 'You are already in a fight!',
+                    content: 'You are already in a ${type}!`,
                     ephemeral: true
                 });
             }
 
             if (FIGHT.player1.userID === OPPONENT_ID || FIGHT.player2.userID === OPPONENT_ID) {
                 if (FIGHT.winner === null) return interaction.editReply({
-                    content: 'That user is already in a fight!',
+                    content: `That user is already in a ${type}!`,
                     ephemeral: true
                 });
             }
@@ -137,7 +138,7 @@ module.exports = {
             THREAD = await interaction.channel.threads.create({
                 name: `Fight: ${PROFILE.characters[PROFILE.characters.active].name} vs ${OPPONENT_PROFILE.characters[CHARACTER].name}`,
                 autoArchiveDuration: 60,
-                reason: 'Fight thread'
+                reason: `${type} thread`
             }),
             THREAD_ID = THREAD.id;
 
@@ -292,7 +293,7 @@ module.exports = {
         const
             EMBED = new DISCORD.EmbedBuilder()
                 .setTitle(`Fight: ${PLAYER1.character.name} and ${PLAYER2.character.name}`)
-                .setDescription(`Fight started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}\n# History
+                .setDescription(`${type.charAt(0).toUpperCase() + type.slice(1)} started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}\n# History
                 - No history yet`)
                 .setTimestamp();
 
@@ -316,12 +317,12 @@ module.exports = {
 
         // Link to the thread
         await interaction.editReply({
-            content: `Created a thread for the fight: <#${THREAD_ID}>`,
+            content: `Created a thread for the ${type}: <#${THREAD_ID}>`,
             ephemeral: true
         });
 
         await THREAD.send({
-            content: `Fight started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}`,
+            content: `${type.charAt(0).toUpperCase() + type.slice(1)}  started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}`,
             components: [ALL]
         });
 
