@@ -4,7 +4,8 @@ const
     DISCORD = require('discord.js'),
     PROFILE_MODEL = require('../../schemas/profile.js'),
     EAT_COOLDOWN = 60 * 15, // 1 hour
-    EAT_COOLDOWN_LOGS = new DISCORD.Collection();
+    EAT_COOLDOWN_LOGS = new DISCORD.Collection(),
+    rank_thresholds = [200, 400, 800, 1100, 1400];
 
 module.exports = {
 
@@ -145,7 +146,8 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        } else if (SUBCOMMAND === "delete") {
+        }
+        else if (SUBCOMMAND === "delete") {
 
             // Conduct prechecks
             await interaction.reply({
@@ -187,7 +189,8 @@ module.exports = {
                 });
             }
 
-        } else if (SUBCOMMAND === "select") {
+        }
+        else if (SUBCOMMAND === "select") {
 
             // Conduct prechecks
             await interaction.reply({
@@ -222,7 +225,8 @@ module.exports = {
                 });
             }
 
-        } else if (SUBCOMMAND === "list") {
+        }
+        else if (SUBCOMMAND === "list") {
 
             // Get characters
             await interaction.reply({
@@ -254,7 +258,8 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        } else if (SUBCOMMAND === "info") {
+        }
+        else if (SUBCOMMAND === "info") {
 
             // Conduct prechecks
             await interaction.reply({
@@ -271,6 +276,25 @@ module.exports = {
             await interaction.editReply({
                 content: `:white_check_mark::hammer: Prechecks complete, getting character...`,
             });
+
+            // Check if the character XP is enough to level up using rank_thresholds
+
+            for (const [index, threshold] of rank_thresholds.entries()) {
+                // Check if the character's rank is already that rank
+                if (CHARACTERS[NAME].rank[1] === index + 1) continue;
+
+                // Check if the character's CXP is greater than the threshold
+                if (CHARACTERS[NAME].rank[0] >= threshold) {
+                    CHARACTERS[NAME].rank[1] = index + 1;
+                    await interaction.channel.send({
+                        content: `Congratulations, ${NAME}! You have leveled up to rank ${index + 1}!`
+                    });
+                    await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
+                    break;
+                }
+
+            }
+
 
             try {
 
@@ -293,7 +317,7 @@ module.exports = {
                         .setDescription(
                             "## Basics\n" +
                             "Name: " + CHARACTER.name + "\n" +
-                            "Rank: " + CHARACTER.rank[1] + "\n" +
+                            "CXP: " + CHARACTER.rank[0] + " (Rank" + CHARACTER.rank[1] + ")\n" +
                             "Health: " + CHARACTER.health[0] + "/" + CHARACTER.health[1] + "\n\n" +
                             "## Stats\n" +
                             "Fights: " + CHARACTER.stats.fights + "\n" +
@@ -325,7 +349,8 @@ module.exports = {
                 });
 
             }
-        } else if (SUBCOMMAND === "eat") {
+        }
+        else if (SUBCOMMAND === "eat") {
 
             // Conduct prechecks
             await interaction.reply({
