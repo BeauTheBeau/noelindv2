@@ -369,6 +369,7 @@ module.exports = {
                         .setDescription(`You ate some food and gained ${HEALTH - CHARACTERS[NAME].health[0]} health!`);
 
                 CHARACTERS[NAME].health[0] = HEALTH;
+                CHARACTERS[NAME].last.ate = Date.now();
                 if (CHARACTERS[NAME].health[0] > CHARACTERS[NAME].health[1]) CHARACTERS[NAME].health[0] = CHARACTERS[NAME].health[1];
                 await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
 
