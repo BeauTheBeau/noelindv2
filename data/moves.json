@@ -29,32 +29,6 @@
   },
   "rank_1": [
     {
-      "name": "Surrender",
-      "short": "surrender",
-      "description": "The user surrenders to their opponent, ending the fight.",
-      "possible_injuries": [
-        "None"
-      ],
-      "action_text": [],
-      "fail_text": [],
-      "damage_level": 0,
-      "success_rate": 0
-    },
-
-    {
-      "name": "Draw",
-      "short": "force",
-      "description": "Fight force ended, draw.",
-      "possible_injuries": [
-        "None"
-      ],
-      "action_text": [],
-      "fail_text": [],
-      "damage_level": 0,
-      "success_rate": 0
-    },
-
-    {
       "short": "basic_bite",
       "name": "Basic Bite",
       "possible_injuries": [

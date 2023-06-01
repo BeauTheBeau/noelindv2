@@ -281,7 +281,7 @@ module.exports = {
         RANK_3.addComponents(RANK_3_BUTTONS);
         RANK_4.addComponents(RANK_4_BUTTONS);
         RANK_5.addComponents(RANK_5_BUTTONS);
-        // ALL.addComponents(ALL_BUTTONS);
+        ALL.addComponents(ALL_BUTTONS);
 
         await interaction.editReply({
             content: `:white_check_mark::white_check_mark::ballot_box_with_check: Setting up buttons...`,
@@ -320,7 +320,11 @@ module.exports = {
             ephemeral: true
         });
 
-        await THREAD.send(`<@${USER_ID}> challenged <@${OPPONENT_ID}> to a fight!`);
+        await THREAD.send({
+            content: `Fight started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}`,
+            components: [ALL]
+        });
+
         return THREAD.send({embeds: [EMBED], components: [RANK_1, RANK_2, RANK_3, RANK_4, RANK_5]});
     }
 }
