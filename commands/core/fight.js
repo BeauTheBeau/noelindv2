@@ -75,7 +75,7 @@ module.exports = {
             FIGHT = await FIGHT_MODEL.findOne({userID: USER_ID});
 
         if (FIGHT) return interaction.editReply({
-            content: `You are already in a fight!',
+            content: `You are already in a fight!`,
             ephemeral: true
         });
 
@@ -86,7 +86,7 @@ module.exports = {
         for (const FIGHT of await FIGHT_MODEL.find()) {
             if (FIGHT.player1.userID === USER_ID || FIGHT.player2.userID === USER_ID) {
                 if (FIGHT.winner === null) return interaction.editReply({
-                    content: 'You are already in a ${type}!`,
+                    content: `You are already in a ${type}!`,
                     ephemeral: true
                 });
             }
@@ -207,15 +207,6 @@ module.exports = {
                     .setCustomId(`f:force&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
                     .setStyle(DISCORD.ButtonStyle.Danger)
             ]
-
-
-        // example of moves
-
-        // "rank_1": [
-        //     {
-        //         "name": "test"
-        //     }
-        // ]
 
         let ALL_MOVES = []
 
