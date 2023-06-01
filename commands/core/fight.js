@@ -75,7 +75,7 @@ module.exports = {
             FIGHT = await FIGHT_MODEL.findOne({userID: USER_ID});
 
         if (FIGHT) return interaction.editReply({
-            content: `You are already in a fight!`,
+            content: `You are already in a ${TYPE}!`,
             ephemeral: true
         });
 
@@ -127,16 +127,10 @@ module.exports = {
         await NEW_FIGHT.save();
         console.log("SAVED!")
 
-
-        // await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID},
-        //     { $inc: { 'characters.$[character].stats.fights': 1 } },
-        //     { arrayFilters: [ { 'character.name': PROFILE.characters[PROFILE.characters.active].name } ] }
-        // );
-
         // Send the reply and create a thread
         const
             THREAD = await interaction.channel.threads.create({
-                name: `Fight: ${PROFILE.characters[PROFILE.characters.active].name} vs ${OPPONENT_PROFILE.characters[CHARACTER].name}`,
+                name: `${TYPE.charAt(0).toUpperCase() + TYPE.slice(1)}: ${PROFILE.characters[PROFILE.characters.active].name} vs ${OPPONENT_PROFILE.characters[CHARACTER].name}`,
                 autoArchiveDuration: 60,
                 reason: `${TYPE} thread`
             }),
@@ -213,7 +207,6 @@ module.exports = {
         for (let RANK in MOVES) {
 
             if (RANK === "success" || RANK === "damage_ranges") continue;
-            console.log(RANK)
 
             let move_short, move_long;
 
@@ -225,13 +218,9 @@ module.exports = {
                 const ID = `f:${move_short}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`
 
                 // Check for the ID in ALL MOVES
-                for (let i = 0; i < ALL_MOVES.length; i++) {
-                    if (ALL_MOVES[i].id === ID) MOVES[RANK].splice(i, 1)
-                }
+                for (let i = 0; i < ALL_MOVES.length; i++) if (ALL_MOVES[i].id === ID) MOVES[RANK].splice(i, 1)
 
                 ALL_MOVES.push(ID)
-
-                console.log(`> f:${move_short}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
 
                 const
                     buttonPromise = new Promise(async (resolve, reject) => {
@@ -239,14 +228,10 @@ module.exports = {
                             .setCustomId(`f:${move_short}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
                             .setLabel(`${move_long}`)
                             .setStyle(DISCORD.ButtonStyle.Primary);
-
                         resolve(BUTTON);
                     });
 
-                // Check for any de
-
-                console.log(RANK)
-
+                // Check for any disabled moves
                 switch (RANK) {
                     case "rank_1":
                         RANK_1_BUTTONS.push(await buttonPromise);
@@ -283,7 +268,7 @@ module.exports = {
         // Send the fight embed
         const
             EMBED = new DISCORD.EmbedBuilder()
-                .setTitle(`Fight: ${PLAYER1.character.name} and ${PLAYER2.character.name}`)
+                .setTitle(`${TYPE.charAt(0).toUpperCase() + TYPE.slice(1)}: ${PLAYER1.character.name} and ${PLAYER2.character.name}`)
                 .setDescription(`${TYPE.charAt(0).toUpperCase() + TYPE.slice(1)} started between <@${USER_ID}>'s ${PLAYER1.character.name} and <@${OPPONENT_ID}>'s ${PLAYER2.character.name}\n# History
                 - No history yet`)
                 .setTimestamp();
