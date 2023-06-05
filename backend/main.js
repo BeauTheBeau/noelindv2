@@ -45,7 +45,6 @@ function createProfile(userID) {
     console.log("========================================");
 }
 
-6
 
 async function load_commands(category) {
 
@@ -68,7 +67,6 @@ async function load_commands(category) {
 
 // Main
 client.once(Events.ClientReady, async () => {
-
     console.log(`Logged in as ${client.user.tag}`);
 
     // Connect to MongoDB
@@ -175,20 +173,18 @@ client.on(Events.InteractionCreate, async interaction => {
                 // =================
                 // Prepare Variables
 
-                // Custom ID - fight fightID isSpar
-                // f:basic_bite&?f=[fight id]-<timestamp>&isSpar=[true/false]
-                // realworld ex
-                // f:basic_bite&?f=729567974070391848-729567974070391848-1685468616237&isSpar=true
-                // Fight ID
-                // <player 1 id>-<player 2 id>-<timestamp>
-
-
                 // Get fight data
                 let fight_data;
                 let opponent_data, my_data;
                 let opponent_char, my_char;
                 let p1id, p2id, timestamp;
 
+                const xp = {
+                    win: 70,
+                    lose: 40,
+                    draw: 40,
+                    surrender: 40
+                }
 
                 // Get fight ID and other relevant data
                 const
@@ -251,7 +247,6 @@ client.on(Events.InteractionCreate, async interaction => {
                     p2id = fightID.split(`-`)[1];
                     timestamp = fightID.split(`-`)[2];
                 }
-                // check if it is their turn
                 if (fight_data.turn !== interaction.user.id.toString()) {
                     await interaction.reply({
                         content: `It's not your turn!`,
@@ -283,6 +278,8 @@ client.on(Events.InteractionCreate, async interaction => {
                     my_char.stats.surrender += 1;
                     my_char.stats.losses += 1;
                     my_char.stats.fights += 1;
+                    my_char.rank[0] += xp.surrender;
+
                     my_char.last.surrender = Date.now();
                     my_char.last.fight = Date.now();
                     my_char.last.loss = Date.now();
@@ -291,6 +288,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     opponent_char.stats.fights += 1;
                     opponent_char.last.win = Date.now();
                     opponent_char.last.fight = Date.now();
+                    opponent_char.rank[0] += xp.win;
 
                     try {
                         await fight_data.save();
@@ -366,9 +364,12 @@ client.on(Events.InteractionCreate, async interaction => {
                     // Update the user.characters[active].stats.draws
                     my_char.stats.draws += 1;
                     my_char.last.draw = Date.now();
+                    my_char.rank[0] += xp.draw;
 
                     opponent_char.stats.draws += 1;
                     opponent_char.last.draw = Date.now();
+                    opponent_char.rank[0] += xp.draw;
+
 
                     try {
                         await fight_data.save();
