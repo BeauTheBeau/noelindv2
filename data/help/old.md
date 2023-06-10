@@ -1,3 +1,6 @@
+# Please use specific category help files instead of this one 
+# This will not be updated in the future
+
 ## Character
 Manage your characters
 
@@ -121,3 +124,17 @@ Available Commands:
         - [page]  Page number of the leaderboard
 ```
 
+
+# Please use specific category help files instead of this one
+# This will not be updated in the future
+
+## List of categories
+- /help character
+- /help fight
+- /help moves
+- /help shop-manager
+- /help shop
+- /help xp-manager
+- /help xp
+- /help lekar
+- /help general
