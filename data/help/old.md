@@ -1,6 +1,8 @@
 # Please use specific category help files instead of this one 
 # This will not be updated in the future
 
+# help / legacy
+
 ## Character
 Manage your characters
 

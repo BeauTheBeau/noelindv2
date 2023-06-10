@@ -1,4 +1,4 @@
-# Moves
+# help / moves
 ## Commands
 
 - **/moves** 

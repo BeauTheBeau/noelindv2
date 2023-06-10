@@ -1,6 +1,4 @@
-
-# Shop Manager
-
+# help / shopmanager
 ## Commands
 
 **/shop-manager add**

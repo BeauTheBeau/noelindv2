@@ -1,4 +1,4 @@
-# XP Manager
+# help / xpmanager
 
 ## Commands
 

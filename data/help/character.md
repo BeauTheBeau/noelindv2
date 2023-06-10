@@ -1,5 +1,4 @@
-# Character
-
+# help / character
 ## Commands
 
 - **/character create**

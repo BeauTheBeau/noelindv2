@@ -1,5 +1,4 @@
-# Shop
-
+# help / shop
 ## Commands
 
 **/shop buy**

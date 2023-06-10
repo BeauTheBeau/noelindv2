@@ -1,4 +1,4 @@
-# Lekar
+# help / lekar
 ## Commands
 - **/lekar add** 
     - Parameters: [user, character]

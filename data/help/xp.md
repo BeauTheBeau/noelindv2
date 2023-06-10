@@ -1,5 +1,4 @@
-# XP
-
+# help / xp
 ## Commands
 
 - **/xp view**

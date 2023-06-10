@@ -1,4 +1,4 @@
-# Fight
+# help / fight 
 ## Commands
 
 - **/fight**
