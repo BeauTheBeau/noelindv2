@@ -10,7 +10,6 @@ module.exports = {
     data: new DISCORD.SlashCommandBuilder()
         .setName('shop-manager')
         .setDescription('Manage the shop')
-        .setDefaultMemberPermissions(DISCORD.PermissionFlagsBits.ManageGuild)
         .addSubcommand(subcommand => subcommand
             .setName('add')
             .setDescription('Add an item to the shop')
@@ -67,6 +66,14 @@ module.exports = {
             )),
 
     async execute(interaction) {
+
+        // Authenticate the user
+        if (interaction.guildId !== '1026085612891164732') {
+            if (!interaction.member.roles.cache.has('894631600967540838')) return interaction.reply({
+                content: 'You do not have permission to use this command',
+                ephemeral: true
+            });
+        }
 
         const
             SUBCOMMAND = interaction.options.getSubcommand(),

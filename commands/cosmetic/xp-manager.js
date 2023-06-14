@@ -64,6 +64,14 @@ module.exports = {
 
     async execute(interaction) {
 
+        // Authenticate the user
+        if (interaction.guildId !== '1026085612891164732') {
+            if (!interaction.member.roles.cache.has('894631600967540838')) return interaction.reply({
+                content: 'You do not have permission to use this command',
+                ephemeral: true
+            });
+        }
+
         const
             SUBCOMMAND = interaction.options.getSubcommand(),
             CHANNEL = interaction.options.getChannel('channel') || interaction.channel,
