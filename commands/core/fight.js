@@ -43,38 +43,27 @@ module.exports = {
             OPPONENT_PROFILE = await PROFILE_MODEL.findOne({userID: OPPONENT_ID}),
             TYPE = IS_SPAR ? 'spar' : 'fight';
 
-        // Prechecks
-        await interaction.reply({
-            content: `:mag: :ballot_box_with_check: :ballot_box_with_check: Conducting prechecks...`,
-            ephemeral: true
-        });
-
-        if (!PROFILE) return interaction.editReply({
+        if (!PROFILE) return interaction.reply({
             content: 'You do not have a profile yet! Create one with /character create',
             ephemeral: true
         });
-        if (!OPPONENT_PROFILE) return interaction.editReply({
+        if (!OPPONENT_PROFILE) return interaction.reply({
             content: 'That user does not have a profile yet!',
             ephemeral: true
         });
-        if (!PROFILE.characters.active) return interaction.editReply({
+        if (!PROFILE.characters.active) return interaction.reply({
             content: 'You do not have an active character! Set one with /character select',
             ephemeral: true
         });
-        if (!OPPONENT_PROFILE.characters[CHARACTER]) return interaction.editReply({
+        if (!OPPONENT_PROFILE.characters[CHARACTER]) return interaction.reply({
             content: 'That user does not have that character!',
-            ephemeral: true
-        });
-
-        await interaction.editReply({
-            content: `:white_check_mark::ballot_box_with_check::ballot_box_with_check: Prechecks passed, setting up ${TYPE}...`,
             ephemeral: true
         });
 
         const
             FIGHT = await FIGHT_MODEL.findOne({userID: USER_ID});
 
-        if (FIGHT) return interaction.editReply({
+        if (FIGHT) return interaction.reply({
             content: `You are already in a ${TYPE}!`,
             ephemeral: true
         });
@@ -85,14 +74,14 @@ module.exports = {
 
         for (const FIGHT of await FIGHT_MODEL.find()) {
             if (FIGHT.player1.userID === USER_ID || FIGHT.player2.userID === USER_ID) {
-                if (FIGHT.winner === null) return interaction.editReply({
+                if (FIGHT.winner === null) return interaction.reply({
                     content: `You are already in a ${TYPE}!`,
                     ephemeral: true
                 });
             }
 
             if (FIGHT.player1.userID === OPPONENT_ID || FIGHT.player2.userID === OPPONENT_ID) {
-                if (FIGHT.winner === null) return interaction.editReply({
+                if (FIGHT.winner === null) return interaction.reply({
                     content: `That user is already in a ${TYPE}!`,
                     ephemeral: true
                 });
@@ -260,11 +249,6 @@ module.exports = {
         RANK_5.addComponents(RANK_5_BUTTONS);
         ALL.addComponents(ALL_BUTTONS);
 
-        await interaction.editReply({
-            content: `:white_check_mark::white_check_mark::ballot_box_with_check: Setting up buttons...`,
-            ephemeral: true
-        })
-
         // Send the fight embed
         const
             EMBED = new DISCORD.EmbedBuilder()
@@ -292,7 +276,7 @@ module.exports = {
         );
 
         // Link to the thread
-        await interaction.editReply({
+        await interaction.reply({
             content: `Created a thread for the ${TYPE}: <#${THREAD_ID}>`,
             ephemeral: true
         });
