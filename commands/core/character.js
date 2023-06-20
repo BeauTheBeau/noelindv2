@@ -68,11 +68,19 @@ module.exports = {
 
     async execute(interaction) {
 
+        let USER_ID = interaction.user.id;
+        try {
+            if (interaction.options.getUser('user').id !== undefined) USER_ID = interaction.options.getUser('user').id;
+        } catch (error) {
+
+        }
+
+
         const
-            USER_ID = interaction.options.getUser('user').id || interaction.user.id,
             PROFILE = await PROFILE_MODEL.findOne({userID: USER_ID}),
             SUBCOMMAND = interaction.options.getSubcommand(),
             NAME = interaction.options.getString('name');
+
 
         let
             CHARACTERS = PROFILE.characters;
@@ -131,8 +139,7 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        }
-        else if (SUBCOMMAND === "delete") {
+        } else if (SUBCOMMAND === "delete") {
 
             if (!CHARACTERS[NAME]) return interaction.reply({
                 content: `:negative_squared_cross_mark: You don't have a character with that name`,
@@ -159,8 +166,7 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        }
-        else if (SUBCOMMAND === "select") {
+        } else if (SUBCOMMAND === "select") {
 
             if (!CHARACTERS[NAME]) return interaction.reply({
                 content: `:negative_squared_cross_mark: You don't have a character with that name`,
@@ -178,8 +184,7 @@ module.exports = {
                 });
             }
 
-        }
-        else if (SUBCOMMAND === "list") {
+        } else if (SUBCOMMAND === "list") {
 
 
             try {
@@ -205,8 +210,7 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        }
-        else if (SUBCOMMAND === "info") {
+        } else if (SUBCOMMAND === "info") {
 
 
             if (!CHARACTERS[NAME]) return interaction.reply({
@@ -277,50 +281,47 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        }
-        else if (SUBCOMMAND === "eat") {
+        } else if (SUBCOMMAND === "eat") {
 
             if (!CHARACTERS[NAME]) return interaction.reply({
                 content: `:negative_squared_cross_mark: You don't have a character with that name`,
                 ephemeral: true
             });
             if (EAT_COOLDOWN_LOGS[NAME]) return interaction.reply({
-                content: `:negative_squared_cross_mark: You can't eat yet, wait <t:${Math.floor(EAT_COOLDOWN_LOGS[NAME] / 1000) + EAT_COOLDOWN}:R>`,
-                ephemeral: true
-            });
-            if (CHARACTERS[NAME].health[0] === CHARACTERS[NAME].health[1]) return interaction.reply({
-                content: `:negative_squared_cross_mark: Your health is already full`,
+                content: `:negative_squared_cross_mark: You can't eat yet, you can eat again <t:${Math.floor(EAT_COOLDOWN_LOGS[NAME] / 1000) + EAT_COOLDOWN}:R>`,
                 ephemeral: true
             });
             if (CHARACTERS[NAME].health[0] === 0) return interaction.reply({
                 content: `:negative_squared_cross_mark: You are dead`,
                 ephemeral: true
             });
-            if (CHARACTERS[NAME].health[0] < 60) return interaction.reply({
-                content: `:negative_squared_cross_mark: Health is too low to eat, visit a Lekar to heal instead`,
-                ephemeral: true
-            });
-
 
             try {
                 // Add a random amount of health (max 20)
                 const
                     HEALTH = CHARACTERS[NAME].health[0] + Math.floor(Math.random() * 20) + 1,
                     EMBED = new DISCORD.EmbedBuilder()
-                        .setTitle(`Ate food`)
+                        .setTitle(`You ate food`)
                         .setColor('#ff0000')
                         .setTimestamp()
-                        .setDescription(`You ate some food and gained ${HEALTH - CHARACTERS[NAME].health[0]} health!`);
 
-                CHARACTERS[NAME].health[0] = HEALTH;
+                if (CHARACTERS[NAME].health[0] < 60) {
+                    EMBED.setDescription(`You ate food, but your health is too low to gain any health! You must visit a Lekar`);
+                } else if (CHARACTERS[NAME].health[0] <= 100) {
+                    EMBED.setDescription(`You ate some food, but you are already at full health!`);
+                    CHARACTERS[NAME].health[0] = HEALTH;
+                } else {
+                    EMBED.setDescription(`You ate some food and gained ${HEALTH - CHARACTERS[NAME].health[0]} health!`);
+                    CHARACTERS[NAME].health[0] = HEALTH;
+                    if (CHARACTERS[NAME].health[0] > CHARACTERS[NAME].health[1]) CHARACTERS[NAME].health[0] = CHARACTERS[NAME].health[1];
+                }
+
                 CHARACTERS[NAME].last.ate = Date.now();
-                if (CHARACTERS[NAME].health[0] > CHARACTERS[NAME].health[1]) CHARACTERS[NAME].health[0] = CHARACTERS[NAME].health[1];
+                EAT_COOLDOWN_LOGS[NAME] = Date.now();
                 await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
 
-                EAT_COOLDOWN_LOGS[NAME] = Date.now();
-
                 await interaction.reply({
-                    content: `:white_check_mark::white_check_mark: You successfully ate!`,
+                    content: `:white_check_mark: You ate!`,
                     embeds: [EMBED]
                 });
 
