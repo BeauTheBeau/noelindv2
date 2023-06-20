@@ -3,7 +3,7 @@
 
 // Requires
 const
-    {Client, Events, GatewayIntentBits, Collection, EmbedBuilder} = require(`discord.js`),
+    {Client, Events, GatewayIntentBits, Collection, ButtonBuilder, EmbedBuilder, ButtonStyle, ActionRowBuilder} = require(`discord.js`),
     mongoose = require(`mongoose`),
     profileModel = require(`../schemas/profile.js`),
     fightModel = require('../schemas/fight.js'),
@@ -66,6 +66,58 @@ async function load_commands(category) {
     console.log("========================================");
 }
 
+// Damage a character if they haven't eaten in a while
+const thresholds = [0, 0, 0, 2, 3, 4, 11, 14, 14, 18, 21, 25, 28, 32, 35, 39, 42, 46, 49, 53, 56, 60, 63, 67, 70, 74, 77, 81, 84, 88, 91, 95, 98, 100];
+
+async function damageCharacter(name, userID) {
+    const userData = await profileModel.findOne({userID: userID});
+    const character = userData.characters[name];
+    if (!character) return;
+
+    const epochs = {
+        "ate": character.last.ate,
+        "tookDamage": character.last.damageFromNotEating || 0,
+        "days": ((Date.now() - character.last.ate) / 86400)
+    }
+
+    const damage = thresholds[Math.floor(epochs.days)] || 100;
+
+    const embed = new EmbedBuilder()
+        .setTitle(`${name} needs to eat!`)
+
+    if (epochs.days > 3) return;
+
+    // Apply damage
+    character.health[0] -= damage;
+
+    // Check if character is dead
+    if (character.health[0] <= 0) {
+        character.health[0] = 0;
+        character.alive = false;
+        embed.setDescription(`${name} has died from starvation!`);
+    }
+
+    else embed.setDescription(`${name} has taken ${damage} damage from not eating for ${Math.floor(epochs.days)} days! Do </character eat:1108133163273814066> to eat!`);
+
+    character.last.damageFromNotEating = Date.now();
+    await userData.save();
+
+    const user = await client.users.fetch(userID);
+    const optOut = await profileModel.findOne({userID: userID, "settings.optOut": true});
+    if (optOut) return;
+
+    const optOutButton = new ButtonBuilder()
+        .setStyle(ButtonStyle.Primary)
+        .setLabel("Opt Out of Notifications")
+        .setCustomId("optOut");
+
+    const row = new ActionRowBuilder()
+        .addComponents(optOutButton);
+
+    user.send({embeds: [embed], components: [row]});
+}
+
+
 // Main
 client.once(Events.ClientReady, async () => {
     console.log(`Logged in as ${client.user.tag}`);
@@ -105,12 +157,12 @@ client.once(Events.ClientReady, async () => {
     console.log("========================================");
 
     // Connect to MongoDB
-    mongoose.connection.on(`connected`, () => {
+    await mongoose.connection.on(`connected`, () => {
         console.log(`Connected to MongoDB`);
         console.log("========================================");
+        damageCharacter("BeauTheBeau", "729567972070391848")
     });
 });
-
 client.on(Events.InteractionCreate, async interaction => {
 
     let profile_data;
@@ -156,6 +208,40 @@ client.on(Events.InteractionCreate, async interaction => {
                 console.log("========================================");
             }
 
+            // optOut
+            if (interaction.customId === "optOut") {
+
+                // check if the setting exists
+                if (!profile_data.settings.optOut) profile_data.settings.optOut = true;
+                else profile_data.settings.optOut = !profile_data.settings.optOut;
+
+                await profile_data.save();
+
+                const optInButton = new ButtonBuilder()
+                    .setStyle(ButtonStyle.Primary)
+                    .setLabel("Opt Back In to Notifications")
+                    .setCustomId("optIn");
+
+                const row = new ActionRowBuilder()
+                    .addComponents(optInButton);
+
+                await interaction.reply({
+                    content: "You have opted out of notifications!",
+                    ephemeral: false,
+                    components: [row]
+                });
+            }
+
+            // optIn
+            if (interaction.customId === "optIn") {
+                profile_data.settings.optOut = false;
+                await profile_data.save();
+                await interaction.reply({
+                    content: "You have opted back in to notifications!",
+                    ephemeral: true
+                });
+            }
+
             // Check if user has a character
             if (!profile_data.characters.active) {
                 await interaction.reply({
@@ -198,8 +284,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 try {
                     fight_data = await fightModel.findOne({combatID: fightID});
-                }
-                catch (err) {
+                } catch (err) {
                     console.log(err);
                     console.log("========================================");
 
@@ -647,7 +732,6 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
     }
 })
-
 client.on(Events.MessageCreate, async message => {
 
     // Ignore messages from bots or blacklisted channels (see config.json and xp-manager.js)
@@ -693,6 +777,7 @@ client.on(Events.MessageCreate, async message => {
     }
 });
 
+
 // Handlers
 process.on(`unhandledRejection`, err => {
     console.log(`Unhandled promise rejection`);
@@ -709,12 +794,11 @@ process.on(`uncaughtException`, err => {
 // Login
 try {
     client.login(TOKEN);
-}
-catch (err) {
+} catch (err) {
     console.log(`Failed to login to Discord!`);
     console.error(err.stack);
     console.log("========================================");
 }
 
 // Export
-module.exports = {client: client, createProfile: createProfile};
+module.exports = {client: client, createProfile: createProfile, damageCharacter: damageCharacter};

@@ -7,6 +7,7 @@ const profileSchema = new mongoose.Schema({
     characters: {type: Object, default: {active: null,}},
     inventory: {type: Object, default: {}},
     combat: {type: Object, default: {active: false, combatID: null}},
+    settings: {type: Object, default: {optOut: false}},
 });
 
 const model = mongoose.model('ProfileModels', profileSchema);

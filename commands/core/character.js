@@ -3,6 +3,7 @@
 const
     DISCORD = require('discord.js'),
     PROFILE_MODEL = require('../../schemas/profile.js'),
+    damageCharacter = require(`../../backend/main.js`).damageCharacter,
     EAT_COOLDOWN = 60 * 15, // 1 hour
     EAT_COOLDOWN_LOGS = new DISCORD.Collection(),
     rank_thresholds = [200, 400, 800, 1100, 1400];
@@ -20,6 +21,19 @@ module.exports = {
                 .setName('name')
                 .setDescription('Name of the character')
                 .setRequired(true)
+            ))
+        .addSubcommand(subcommand => subcommand
+            .setName("force-eat-damage")
+            .setDescription("Force a character to suffer damage from starvation")
+            .addStringOption(option => option
+                .setName('name')
+                .setDescription('Name of the character')
+                .setRequired(true)
+            )
+            .addUserOption(option => option
+                .setName('user')
+                .setDescription(`The user who owns the character; defaults to you`)
+                .setRequired(false)
             ))
         .addSubcommand(subcommand => subcommand
             .setName('delete')
@@ -75,12 +89,10 @@ module.exports = {
 
         }
 
-
         const
             PROFILE = await PROFILE_MODEL.findOne({userID: USER_ID}),
             SUBCOMMAND = interaction.options.getSubcommand(),
             NAME = interaction.options.getString('name');
-
 
         let
             CHARACTERS = PROFILE.characters;
@@ -332,6 +344,27 @@ module.exports = {
                     ephemeral: true
                 });
             }
+        } else if (SUBCOMMAND === "force-eat-damage") {
+
+            // Authenticate the user
+            if (interaction.guildId !== '1026085612891164732') {
+                if (!interaction.member.roles.cache.has('894631600967540838')) return interaction.reply({
+                    content: 'You do not have permission to use this command',
+                    ephemeral: true
+                });
+            }
+
+            const CHARACTER = CHARACTERS[NAME];
+            await interaction.reply({
+                content: `https://http.cat/204`,
+                ephemeral: true
+            });
+            await interaction.followUp({
+                content: `No feedback is available, please check your </character info:1108133163273814066> for changes`,
+                ephemeral: true
+            });
+
+
         }
     }
 }
