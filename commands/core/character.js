@@ -69,7 +69,7 @@ module.exports = {
     async execute(interaction) {
 
         const
-            USER_ID = interaction.user.id || interaction.options.getUser('user').id,
+            USER_ID = interaction.options.getUser('user').id || interaction.user.id,
             PROFILE = await PROFILE_MODEL.findOne({userID: USER_ID}),
             SUBCOMMAND = interaction.options.getSubcommand(),
             NAME = interaction.options.getString('name');
@@ -77,34 +77,19 @@ module.exports = {
         let
             CHARACTERS = PROFILE.characters;
 
-
         if (SUBCOMMAND === "create") {
-
-            // Conduct prechecks
-            await interaction.reply({
-                content: `:mag::ballot_box_with_check:  Conducting prechecks...`,
+            if (CHARACTERS[NAME]) return interaction.reply({
+                content: `:negative_squared_cross_mark: You already have a character with that name`,
                 ephemeral: true
             });
 
-            if (CHARACTERS[NAME]) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: You already have a character with that name`,
+            if (NAME.length > 20) return interaction.reply({
+                content: `:negative_squared_cross_mark: Character names cannot be longer than 20 characters`,
                 ephemeral: true
             });
 
-            if (NAME.length > 20) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: Character names cannot be longer than 20 characters`,
-                ephemeral: true
-            });
-
-            if (NAME.match(/[^a-zA-Z0-9]/g)) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: Character names can only contain alphanumeric characters`,
-                ephemeral: true
-            });
-
-
-            // Create the character
-            await interaction.editReply({
-                content: `:white_check_mark::hammer: Prechecks complete, creating character...`,
+            if (NAME.match(/[^a-zA-Z0-9]/g)) return interaction.reply({
+                content: `:negative_squared_cross_mark: Character names can only contain alphanumeric characters`,
                 ephemeral: true
             });
 
@@ -134,93 +119,61 @@ module.exports = {
 
                 await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
 
-                await interaction.editReply({
-                    content: `:white_check_mark::white_check_mark: Character created!`,
+                await interaction.reply({
+                    content: `:white_check_mark: Character created!`,
                     ephemeral: true
                 });
 
             } catch (error) {
                 console.log(error);
-                await interaction.editReply({
-                    content: `:negative_squared_cross_mark::ballot_box_with_check: An error occurred while creating your character`,
+                await interaction.reply({
+                    content: `:negative_squared_cross_mark:An error occurred while creating your character`,
                     ephemeral: true
                 });
             }
         }
         else if (SUBCOMMAND === "delete") {
 
-            // Conduct prechecks
-            await interaction.reply({
-                content: `:mag::ballot_box_with_check:  Conducting prechecks...`,
-                ephemeral: true
-            });
-
-            if (!CHARACTERS[NAME]) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: You don't have a character with that name`,
+            if (!CHARACTERS[NAME]) return interaction.reply({
+                content: `:negative_squared_cross_mark: You don't have a character with that name`,
                 ephemeral: true
             });
 
             // if active core
-            if (CHARACTERS.active === NAME) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: You can't delete your active character`,
+            if (CHARACTERS.active === NAME) return interaction.reply({
+                content: `:negative_squared_cross_mark: You can't delete your active character`,
                 ephemeral: true
             });
 
-            // Delete the character
-            await interaction.editReply({
-                content: `:white_check_mark::hammer: Prechecks complete, deleting character...`,
-            });
-
             try {
-
                 delete CHARACTERS[NAME];
-
                 await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
-
-                await interaction.editReply({
+                await interaction.reply({
                     content: `:white_check_mark::white_check_mark: Character deleted!`,
                     ephemeral: true
                 });
             } catch (error) {
                 console.log(error);
-                await interaction.editReply({
+                await interaction.reply({
                     content: `:negative_squared_cross_mark::ballot_box_with_check: An error occurred while deleting your character`,
                     ephemeral: true
                 });
             }
-
         }
         else if (SUBCOMMAND === "select") {
 
-            // Conduct prechecks
-            await interaction.reply({
-                content: `:mag::ballot_box_with_check:  Conducting prechecks...`,
+            if (!CHARACTERS[NAME]) return interaction.reply({
+                content: `:negative_squared_cross_mark: You don't have a character with that name`,
                 ephemeral: true
-            });
-
-            if (!CHARACTERS[NAME]) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: You don't have a character with that name`,
-                ephemeral: true
-            });
-
-            // Select the character
-            await interaction.editReply({
-                content: `:white_check_mark::hammer: Prechecks complete, selecting character...`,
             });
 
             try {
-
                 CHARACTERS.active = NAME;
                 await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
-
-                await interaction.editReply({
-                    content: `:white_check_mark::white_check_mark: Character selected!`,
-                    ephemeral: true
-                });
             } catch (error) {
                 console.log(error);
-                await interaction.editReply({
-                    content: `:negative_squared_cross_mark::ballot_box_with_check: An error occurred while selecting your character`,
+                return await interaction.reply({
+                    content: `:negative_squared_cross_mark: An error occurred while selecting your character`,
                     ephemeral: true
                 });
             }
@@ -228,11 +181,6 @@ module.exports = {
         }
         else if (SUBCOMMAND === "list") {
 
-            // Get characters
-            await interaction.reply({
-                content: `:mag::ballot_box_with_check:  Getting characters...`,
-                ephemeral: true
-            });
 
             try {
 
@@ -244,37 +192,26 @@ module.exports = {
                         .setTimestamp()
                         .setDescription(`Active character: ${CHARACTERS.active}\n\n${CHARACTER_LIST.map((character, index) => `${index + 1}. ${character}`).join('\n')}`);
 
-                await interaction.editReply({
-                    content: `:white_check_mark::white_check_mark: Characters retrieved!`,
-                    ephemeral: true,
+                await interaction.reply({
+                    ephemeral: false,
                     embeds: [EMBED]
                 });
 
             } catch (error) {
 
                 console.log(error);
-                await interaction.editReply({
-                    content: `:negative_squared_cross_mark::ballot_box_with_check: An error occurred while getting your characters`,
+                return await interaction.reply({
+                    content: `:negative_squared_cross_mark: An error occurred while getting your characters`,
                     ephemeral: true
                 });
             }
         }
         else if (SUBCOMMAND === "info") {
 
-            // Conduct prechecks
-            await interaction.reply({
-                content: `:mag::ballot_box_with_check:  Conducting prechecks...`,
-                ephemeral: true
-            });
 
-            if (!CHARACTERS[NAME]) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: You don't have a character with that name`,
+            if (!CHARACTERS[NAME]) return interaction.reply({
+                content: `:negative_squared_cross_mark: You don't have a character with that name`,
                 ephemeral: true
-            });
-
-            // Get the character
-            await interaction.editReply({
-                content: `:white_check_mark::hammer: Prechecks complete, getting character...`,
             });
 
             // Check if the character XP is enough to level up using rank_thresholds
@@ -292,19 +229,12 @@ module.exports = {
                     await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
                     break;
                 }
-
             }
 
-
             try {
-
                 function formatTimestamp(timestamp) {
-                    if (timestamp) {
-                        const validTimestamp = new Date(timestamp);
-                        if (!isNaN(validTimestamp)) {
-                            return "<t:" + Math.floor(timestamp / 1000) + ":R>";
-                        }
-                    }
+                    if (timestamp) if (!isNaN(new Date(timestamp))) return "<t:" + Math.floor(timestamp / 1000) + ":R>";
+
                     return "Never";
                 }
 
@@ -334,54 +264,43 @@ module.exports = {
                             "Surrendered: " + formatTimestamp(CHARACTER.last.surrender)
                         );
 
-                await interaction.editReply({
+                await interaction.reply({
                     content: `:white_check_mark::white_check_mark: Character retrieved!`,
-                    ephemeral: true,
                     embeds: [EMBED]
                 });
 
             } catch (error) {
 
                 console.log(error);
-                await interaction.editReply({
-                    content: `:negative_squared_cross_mark::ballot_box_with_check: An error occurred while getting your character`,
+                return await interaction.reply({
+                    content: `:negative_squared_cross_mark: An error occurred while getting your character`,
                     ephemeral: true
                 });
-
             }
         }
         else if (SUBCOMMAND === "eat") {
 
-            // Conduct prechecks
-            await interaction.reply({
-                content: `:mag::ballot_box_with_check:  Conducting prechecks...`,
+            if (!CHARACTERS[NAME]) return interaction.reply({
+                content: `:negative_squared_cross_mark: You don't have a character with that name`,
                 ephemeral: true
             });
-            if (!CHARACTERS[NAME]) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: You don't have a character with that name`,
+            if (EAT_COOLDOWN_LOGS[NAME]) return interaction.reply({
+                content: `:negative_squared_cross_mark: You can't eat yet, wait <t:${Math.floor(EAT_COOLDOWN_LOGS[NAME] / 1000) + EAT_COOLDOWN}:R>`,
                 ephemeral: true
             });
-            if (EAT_COOLDOWN_LOGS[NAME]) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: You can't eat yet, wait <t:${Math.floor(EAT_COOLDOWN_LOGS[NAME] / 1000) + EAT_COOLDOWN}:R>`,
+            if (CHARACTERS[NAME].health[0] === CHARACTERS[NAME].health[1]) return interaction.reply({
+                content: `:negative_squared_cross_mark: Your health is already full`,
                 ephemeral: true
             });
-            if (CHARACTERS[NAME].health[0] === CHARACTERS[NAME].health[1]) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: Your health is already full`,
+            if (CHARACTERS[NAME].health[0] === 0) return interaction.reply({
+                content: `:negative_squared_cross_mark: You are dead`,
                 ephemeral: true
             });
-            if (CHARACTERS[NAME].health[0] === 0) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: You are dead`,
-                ephemeral: true
-            });
-            if (CHARACTERS[NAME].health[0] < 60) return interaction.editReply({
-                content: `:negative_squared_cross_mark::ballot_box_with_check: Health is too low to eat, visit a Lekar to heal instead`,
+            if (CHARACTERS[NAME].health[0] < 60) return interaction.reply({
+                content: `:negative_squared_cross_mark: Health is too low to eat, visit a Lekar to heal instead`,
                 ephemeral: true
             });
 
-            // Eat
-            await interaction.editReply({
-                content: `:white_check_mark::hammer: Prechecks complete, eating...`,
-            });
 
             try {
                 // Add a random amount of health (max 20)
@@ -400,16 +319,15 @@ module.exports = {
 
                 EAT_COOLDOWN_LOGS[NAME] = Date.now();
 
-                await interaction.editReply({
+                await interaction.reply({
                     content: `:white_check_mark::white_check_mark: You successfully ate!`,
-                    ephemeral: true,
                     embeds: [EMBED]
                 });
 
             } catch (error) {
                 console.log(error);
-                await interaction.editReply({
-                    content: `:negative_squared_cross_mark::ballot_box_with_check: An error occurred while eating`,
+                return await interaction.reply({
+                    content: `:negative_squared_cross_mark: An error occurred while eating`,
                     ephemeral: true
                 });
             }

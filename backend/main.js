@@ -13,6 +13,7 @@ const
 
 const rank_thresholds = [200, 400, 800, 1100, 1400];
 
+
 require(`dotenv`).config();
 
 // Variables
@@ -708,7 +709,8 @@ process.on(`uncaughtException`, err => {
 // Login
 try {
     client.login(TOKEN);
-} catch (err) {
+}
+catch (err) {
     console.log(`Failed to login to Discord!`);
     console.error(err.stack);
     console.log("========================================");
