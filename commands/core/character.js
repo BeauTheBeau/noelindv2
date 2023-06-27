@@ -151,7 +151,8 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        } else if (SUBCOMMAND === "delete") {
+        }
+        else if (SUBCOMMAND === "delete") {
 
             if (!CHARACTERS[NAME]) return interaction.reply({
                 content: `:negative_squared_cross_mark: You don't have a character with that name`,
@@ -178,7 +179,8 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        } else if (SUBCOMMAND === "select") {
+        }
+        else if (SUBCOMMAND === "select") {
 
             if (!CHARACTERS[NAME]) return interaction.reply({
                 content: `:negative_squared_cross_mark: You don't have a character with that name`,
@@ -188,6 +190,7 @@ module.exports = {
             try {
                 CHARACTERS.active = NAME;
                 await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
+                return await interaction.reply({ content: `:white_check_mark: Character selected!`, ephemeral: true });
             } catch (error) {
                 console.log(error);
                 return await interaction.reply({
