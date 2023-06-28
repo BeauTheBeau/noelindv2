@@ -526,17 +526,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 // Get move details
 
 
-                // First, get the character's rank
-
-                let move_data;
-
-                const
-                    rank = my_char.rank[1];
-
-                // Loop through the moves and find the move with the matching short name, assign it to move_data
-
+                let move_data, rank = my_char.rank[1];
                 for (let i = 0; i < moves[`rank_${rank}`].length; i++) if (moves[`rank_${rank}`][i].short === move) move_data = moves[`rank_${rank}`][i];
-
 
                 // =================
                 // Calculate damage
@@ -548,7 +539,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     damage = Math.floor(Math.random() * (damage_ranges.max - damage_ranges.min + 1)) + damage_ranges.min,
                     injury = move_data.possible_injuries[Math.floor(Math.random() * move_data.possible_injuries.length)],
                     success_rate = move_data.success_rate, // scale of 1 - 3 (1 = high, 3 = low)
-                    success = true;
+                    success = Math.floor(Math.random() * success_rate) === 0;
 
                 // =================
                 // DO THE THING
@@ -591,7 +582,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 else fight_data.player1.character = opponent_char;
 
                 // Check if opponent is dead
-                if (opponent_char.health[0] <= 0) {
+                if (opponent_char.health[0] <= 0 || isSpar && opponent_char.health[0] <= 60) {
 
                     // If so, end the fight
                     await interaction.followUp({

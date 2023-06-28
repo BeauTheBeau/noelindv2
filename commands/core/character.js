@@ -117,7 +117,7 @@ module.exports = {
 
                 CHARACTERS[NAME] = {
                     name: NAME,
-                    rank: [0, 1], // xp, rank
+                    rank: [500, 1], // xp, rank
                     isLekar: false,
                     health: [100, 100], // current, max
                     stats: {
@@ -199,7 +199,8 @@ module.exports = {
                 });
             }
 
-        } else if (SUBCOMMAND === "list") {
+        }
+        else if (SUBCOMMAND === "list") {
 
 
             try {
@@ -208,7 +209,6 @@ module.exports = {
                     CHARACTER_LIST = Object.keys(CHARACTERS),
                     EMBED = new DISCORD.EmbedBuilder()
                         .setTitle(`Character List`)
-                        .setColor('#ff0000')
                         .setTimestamp()
                         .setDescription(`Active character: ${CHARACTERS.active}\n\n${CHARACTER_LIST.map((character, index) => `${index + 1}. ${character}`).join('\n')}`);
 
@@ -225,7 +225,8 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        } else if (SUBCOMMAND === "info") {
+        }
+        else if (SUBCOMMAND === "info") {
 
 
             if (!CHARACTERS[NAME]) return interaction.reply({
@@ -296,7 +297,8 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        } else if (SUBCOMMAND === "eat") {
+        }
+        else if (SUBCOMMAND === "eat") {
 
             if (!CHARACTERS[NAME]) return interaction.reply({
                 content: `:negative_squared_cross_mark: You don't have a character with that name`,
@@ -314,20 +316,23 @@ module.exports = {
             try {
                 // Add a random amount of health (max 20)
                 const
-                    HEALTH = CHARACTERS[NAME].health[0] + Math.floor(Math.random() * 20) + 1,
                     EMBED = new DISCORD.EmbedBuilder()
                         .setTitle(`You ate food`)
                         .setColor('#ff0000')
-                        .setTimestamp()
+                        .setTimestamp();
+
+                let HEALTH;
 
                 if (CHARACTERS[NAME].health[0] < 60) {
                     EMBED.setDescription(`You ate food, but your health is too low to gain any health! You must visit a Lekar`);
-                } else if (CHARACTERS[NAME].health[0] <= 100) {
+                } else if (CHARACTERS[NAME].health[0] >= 100) {
                     EMBED.setDescription(`You ate some food, but you are already at full health!`);
-                    CHARACTERS[NAME].health[0] = HEALTH;
                 } else {
+                    if (CHARACTERS[NAME].health[0] > 100) CHARACTERS[NAME].health[0] = 100;
+                    HEALTH = CHARACTERS[NAME].health[0] + Math.floor(Math.random() * 20) + 1
                     EMBED.setDescription(`You ate some food and gained ${HEALTH - CHARACTERS[NAME].health[0]} health!`);
                     CHARACTERS[NAME].health[0] = HEALTH;
+
                     if (CHARACTERS[NAME].health[0] > CHARACTERS[NAME].health[1]) CHARACTERS[NAME].health[0] = CHARACTERS[NAME].health[1];
                 }
 
@@ -340,6 +345,11 @@ module.exports = {
                     embeds: [EMBED]
                 });
 
+                // after 5 minutes, remove the cooldown
+                setTimeout(() => {
+                    delete EAT_COOLDOWN_LOGS[NAME];
+                }, EAT_COOLDOWN);
+
             } catch (error) {
                 console.log(error);
                 return await interaction.reply({
@@ -347,7 +357,8 @@ module.exports = {
                     ephemeral: true
                 });
             }
-        } else if (SUBCOMMAND === "force-eat-damage") {
+        }
+        else if (SUBCOMMAND === "force-eat-damage") {
 
             // Authenticate the user
             if (interaction.guildId !== '1026085612891164732') {

@@ -69,53 +69,59 @@ module.exports = {
 
             if (AMOUNT < 1) return interaction.reply({content: `You can't add less than 1 CXP!`, ephemeral: true});
 
-            let PROFILE = await PROFILE_MODEL.findOne({userID: USER.id});
+            try {
+                let PROFILE = await PROFILE_MODEL.findOne({userID: USER.id});
 
-            if (!PROFILE) {
-                PROFILE = await PROFILE_MODEL.create({
-                    userID: USER.id,
-                    characters: []
+                if (!PROFILE) {
+                    PROFILE = await PROFILE_MODEL.create({
+                        userID: USER.id,
+                        characters: []
+                    });
+                }
+
+                let character = PROFILE.characters.find(character => character.name === CHARACTER);
+                if (!character) return interaction.reply({
+                    content: `That character doesn't exist!`,
+                    ephemeral: true
                 });
+
+                character.cxp += AMOUNT;
+                PROFILE.markModified('characters');
+                await PROFILE.save();
+
+                return interaction.reply({content: `Added ${AMOUNT} CXP to ${CHARACTER}!`});
+            } catch(error) {
+                console.error(error);
+                return interaction.reply({content: `An error occurred during the operation.`, ephemeral: true});
             }
-
-            if (!PROFILE.characters.some(character => character.name === CHARACTER)) return interaction.reply({
-                content: `That character doesn't exist!`,
-                ephemeral: true
-            });
-
-            PROFILE.characters.find(character => character.name === CHARACTER).cxp += AMOUNT;
-            PROFILE.markModified('characters');
-            await PROFILE.save();
-
-            return interaction.reply({content: `Added ${AMOUNT} CXP to ${CHARACTER}!`});
-
         }
 
 
         if (SUBCOMMAND === 'remove') {
-
             if (AMOUNT < 1) return interaction.reply({content: `You can't remove less than 1 CXP!`, ephemeral: true});
 
-            let PROFILE = await PROFILE_MODEL.findOne({userID: USER.id});
+            try {
+                let PROFILE = await PROFILE_MODEL.findOne({userID: USER.id});
+                if (!PROFILE) PROFILE = await PROFILE_MODEL.create({userID: USER.id, characters: []});
 
-            if (!PROFILE) {
-                PROFILE = await PROFILE_MODEL.create({
-                    userID: USER.id,
-                    characters: []
+
+                const character = PROFILE.characters.find(character => character.name === CHARACTER);
+                if (!character) return interaction.reply({content: `That character doesn't exist!`, ephemeral: true});
+
+                if (character.cxp < AMOUNT) return interaction.reply({
+                    content: `${CHARACTER} doesn't have enough CXP!`,
+                    ephemeral: true
                 });
+
+                character.cxp -= AMOUNT;
+                PROFILE.markModified('characters');
+                await PROFILE.save();
+
+                return interaction.reply({content: `Removed ${AMOUNT} CXP from ${CHARACTER}!`});
+            } catch (error) {
+                console.error(error);
+                return interaction.reply({content: `An error occurred while removing CXP!`, ephemeral: true});
             }
-
-            if (!PROFILE.characters.some(character => character.name === CHARACTER)) return interaction.reply({
-                content: `That character doesn't exist!`,
-                ephemeral: true
-            });
-
-            PROFILE.characters.find(character => character.name === CHARACTER).cxp -= AMOUNT;
-            PROFILE.markModified('characters');
-            await PROFILE.save();
-
-            return interaction.reply({content: `Removed ${AMOUNT} CXP to ${CHARACTER}!`});
-
         }
     }
 }

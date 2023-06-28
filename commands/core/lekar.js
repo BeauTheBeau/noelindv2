@@ -138,10 +138,10 @@ module.exports = {
                     content: 'This character is not a Lekar!',
                     ephemeral: true
                 });
-            case 'list':
 
+            case 'list':
                 // Check if the user is a Lekar
-                // Loop through array and check the dictionaries
+                // Loop through an array and check the dictionaries
 
                 let lekars = [];
 
@@ -161,6 +161,23 @@ module.exports = {
                     content: 'This user has no Lekars!',
                     ephemeral: true
                 });
+
+                // Check if all of the Lekars still exist
+                // Loop through users and their characters
+                // and check if the character exists
+
+                for (let i = 0; i < lekars.length; i++) {
+
+                    try {
+                        const
+                            USER_ID = lekars[i].split(' | ')[0].replace('<@', '').replace('>', ''),
+                            CHARACTER = lekars[i].split(' | ')[1];
+
+                        if (!PROFILE_MODEL.findOne({userID: USER_ID}).characters[CHARACTER]) lekars.splice(i, 1);
+                    }
+                    catch (e) {}
+
+                }
 
                 return interaction.reply({
                     content: lekars.join('\n'),

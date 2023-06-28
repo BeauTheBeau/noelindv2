@@ -3,6 +3,7 @@
 const
     DISCORD = require('discord.js'),
     PROFILE_MODEL = require('../../schemas/profile.js');
+const {client} = require("../../backend/main");
 
 module.exports = {
 
@@ -40,7 +41,7 @@ module.exports = {
                 EMBED = new DISCORD.EmbedBuilder()
                     .setTitle('XP Leaderboard')
                     .setDescription(`${TOP_USERS.map((user, position) => {
-                        return `${position + 1}. <@${USER.id}> - Level ${user.level} (${user.xp} XP)`
+                        return `${position + 1}. **${client.users.cache.get(user.userID).username}** - ${user.xp} XP`
                     }).join('\n')}`)
                     .setTimestamp();
 

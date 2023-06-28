@@ -67,7 +67,7 @@ module.exports = {
             // add to inventory object
             PROFILE.inventory[NAME] += AMOUNT;
 
-
+            await PROFILE.markModified('inventory');
             await PROFILE.save();
             await FS.writeFileSync('./backend/config.json', JSON.stringify(CONFIG, null, 4));
 
@@ -101,6 +101,5 @@ module.exports = {
 
             return interaction.reply({embeds: [EMBED], ephemeral: true});
         }
-
     }
 }
