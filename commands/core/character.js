@@ -5,8 +5,7 @@ const
     PROFILE_MODEL = require('../../schemas/profile.js'),
     damageCharacter = require(`../../backend/main.js`).damageCharacter,
     EAT_COOLDOWN = 60 * 15, // 1 hour
-    EAT_COOLDOWN_LOGS = new DISCORD.Collection(),
-    rank_thresholds = [200, 400, 800, 1100, 1400];
+    EAT_COOLDOWN_LOGS = new DISCORD.Collection();
 
 module.exports = {
 
@@ -95,7 +94,7 @@ module.exports = {
             NAME = interaction.options.getString('name');
 
         let
-            CHARACTERS = PROFILE.characters;
+            CHARACTERS = await PROFILE.characters;
 
         if (SUBCOMMAND === "create") {
             if (CHARACTERS[NAME]) return interaction.reply({
@@ -236,12 +235,20 @@ module.exports = {
 
             // Check if the character XP is enough to level up using rank_thresholds
 
-            for (const [index, threshold] of rank_thresholds.entries()) {
+            const CHARACTER = CHARACTERS[NAME];
+            console.log(CHARACTERS[NAME].rank)
+            const rank_thresholds = [200, 400, 800, 1100, 1400];
+            for (let index = rank_thresholds.length - 1; index >= 0; index--) {
                 // Check if the character's rank is already that rank
+
+                await interaction.channel.send({
+                    content: `Comparing R${CHARACTERS[NAME].rank[1]} (${CHARACTERS[NAME].rank[0]} XP) to R${index + 1} (${rank_thresholds[index]} XP)`
+                });
+
                 if (CHARACTERS[NAME].rank[1] === index + 1) continue;
 
                 // Check if the character's CXP is greater than the threshold
-                if (CHARACTERS[NAME].rank[0] >= threshold) {
+                if (CHARACTERS[NAME].rank[0] >= rank_thresholds[index]) {
                     CHARACTERS[NAME].rank[1] = index + 1;
                     await interaction.channel.send({
                         content: `Congratulations, ${NAME}! You have leveled up to rank ${index + 1}!`
@@ -254,12 +261,10 @@ module.exports = {
             try {
                 function formatTimestamp(timestamp) {
                     if (timestamp) if (!isNaN(new Date(timestamp))) return "<t:" + Math.floor(timestamp / 1000) + ":R>";
-
                     return "Never";
                 }
 
                 const
-                    CHARACTER = CHARACTERS[NAME],
                     EMBED = new DISCORD.EmbedBuilder()
                         .setTitle(`Character Info`)
                         .setColor('#ff0000')
@@ -267,7 +272,7 @@ module.exports = {
                         .setDescription(
                             "## Basics\n" +
                             "Name: " + CHARACTER.name + "\n" +
-                            "CXP: " + CHARACTER.rank[0] + " (Rank" + CHARACTER.rank[1] + ")\n" +
+                            "CXP: " + CHARACTER.rank[0] + " (Rank " + CHARACTER.rank[1] + ")\n" +
                             "Health: " + CHARACTER.health[0] + "/" + CHARACTER.health[1] + "\n\n" +
                             "## Stats\n" +
                             "Fights: " + CHARACTER.stats.fights + "\n" +

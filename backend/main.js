@@ -3,16 +3,30 @@
 
 // Requires
 const
-    {Client, Events, GatewayIntentBits, Collection, ButtonBuilder, EmbedBuilder, ButtonStyle, ActionRowBuilder} = require(`discord.js`),
+    {
+        Client,
+        Events,
+        GatewayIntentBits,
+        Collection,
+        ButtonBuilder,
+        EmbedBuilder,
+        ButtonStyle,
+        ActionRowBuilder
+    } = require(`discord.js`),
     mongoose = require(`mongoose`),
     profileModel = require(`../schemas/profile.js`),
     fightModel = require('../schemas/fight.js'),
     CONFIG = require('../backend/config.json'),
     FS = require(`fs`);
+const PROFILE_MODEL = require("../schemas/profile");
 // const MOVES = require("../data/moves.json");
 
 const rank_thresholds = [200, 400, 800, 1100, 1400];
 
+const temp1 = 2;
+const tempt2 = 54
+const temp3 = true;
+console.log(temp1 < 0 || temp3 && tempt2 <= 60)
 
 require(`dotenv`).config();
 
@@ -95,12 +109,10 @@ async function damageCharacter(name, userID) {
         character.health[0] = 0;
         character.alive = false;
         embed.setDescription(`${name} has died from starvation!`);
-    }
-
-    else embed.setDescription(`${name} has taken ${damage} damage from not eating for ${Math.floor(epochs.days)} days! Do </character eat:1108133163273814066> to eat!`);
+    } else embed.setDescription(`${name} has taken ${damage} damage from not eating for ${Math.floor(epochs.days)} days! Do </character eat:1108133163273814066> to eat!`);
 
     character.last.damageFromNotEating = Date.now();
-    await userData.save();
+    await PROFILE_MODEL.findOneAndUpdate({userID: userID}, {$set: {[`characters.${name}`]: character}});
 
     const user = await client.users.fetch(userID);
     const optOut = await profileModel.findOne({userID: userID, "settings.optOut": true});
@@ -114,12 +126,50 @@ async function damageCharacter(name, userID) {
     const row = new ActionRowBuilder()
         .addComponents(optOutButton);
 
-    user.send({embeds: [embed], components: [row]});
+    try {
+        await user.send({embeds: [embed], components: [row]});
+    } catch (err) {
+        console.log(err);
+    }
+    console.log(`${name} has taken ${damage} damage from not eating for ${Math.floor(epochs.days)} days!`);
 }
 
+// Cron jobs
+// Check if characters need to eat
+const CronJob = require('cron').CronJob;
+const eatJob = new CronJob('0 0 * * *', async () => {
+    const profiles = await profileModel.find({});
+    for (const profile of profiles) {
+        for (const character in profile.characters) {
+            await damageCharacter(character, profile.userID);
+        }
+    }
+}, null, true, 'Europe/London');
+eatJob.start();
+
+const healJob = new CronJob('0 0 * * *', async () => {
+    const profiles = await profileModel.find({});
+    for (const profile of profiles) {
+        for (const character in profile.characters) {
+            const characterData = profile.characters[character];
+            if (characterData.health[0] < characterData.health[1]) {
+                characterData.health[0] += 1;
+                await PROFILE_MODEL.findOneAndUpdate({userID: profile.userID}, {$set: {[`characters.${character}`]: characterData}});
+            }
+
+            if (characterData.health[0] > characterData.health[1]) {
+                characterData.health[0] = characterData.health[1];
+                await PROFILE_MODEL.findOneAndUpdate({userID: profile.userID}, {$set: {[`characters.${character}`]: characterData}});
+            }
+
+        }
+    }
+}, null, true, 'Europe/London');
+
+healJob.start();
 
 // Main
-client.once(Events.ClientReady, async () => {
+client.on(Events.ClientReady, async () => {
     console.log(`Logged in as ${client.user.tag}`);
 
     // Connect to MongoDB
@@ -179,8 +229,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
         case 2:
 
-            const
-                command = client.commands.get(interaction.commandName);
+            const command = client.commands.get(interaction.commandName);
 
             try {
                 console.log(`Executing command ${interaction.commandName} for ${interaction.user.tag} (${interaction.user.id})`);
@@ -195,8 +244,7 @@ client.on(Events.InteractionCreate, async interaction => {
             break;
 
         case 3:
-            console.log(`Button interaction 
-            ${interaction.customId} for ${interaction.user.tag} (${interaction.user.id})`);
+            console.log(`Button interaction  ${interaction.customId} for ${interaction.user.tag} (${interaction.user.id})`);
 
             // Check if user has a profile
             let profile_data;
@@ -280,6 +328,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     isSpar = interaction.customId.split(`&`)[1].split(`=`)[1] === `true`,
                     type = isSpar ? `spar` : `fight`;
 
+
                 console.log(isSpar)
 
                 try {
@@ -315,6 +364,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     });
                     return;
                 }
+
                 if (fight_data.winner !== null) {
                     await interaction.reply({
                         content: `This ${type} is already over, ${fight_data.winner} won!`,
@@ -322,6 +372,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     });
                     return;
                 }
+
                 if (fightID.split(`-`)[0] !== interaction.user.id && fightID.split(`-`)[1] !== interaction.user.id) {
                     await interaction.reply({
                         content: `You are not in this ${type}! It is between <@${fightID.split(`-`)[0]}> and <@${fightID.split(`-`)[1]}>`,
@@ -333,6 +384,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     p2id = fightID.split(`-`)[1];
                     timestamp = fightID.split(`-`)[2];
                 }
+
                 if (fight_data.turn !== interaction.user.id.toString()) {
                     await interaction.reply({
                         content: `It's not your turn!`,
@@ -407,7 +459,7 @@ client.on(Events.InteractionCreate, async interaction => {
                                 "turn": [my_char.name, opponent_char.name],
                                 "move": move,
                                 "damage": 0,
-                                "injury": "nothing",
+                                // "injury": "nothing",
                                 "success": success
                             };
 
@@ -420,7 +472,7 @@ client.on(Events.InteractionCreate, async interaction => {
                         let history_text = "";
 
                         for (let i = 0; i < history.length; i++) {
-                            history_text += `${i + 1}. **${history[i].turn[0]}** used **${history[i].move}** and dealt **${history[i].damage}** damage, causing **${history[i].injury}**!`;
+                            history_text += `${i + 1}. **${history[i].turn[0]}** used **${history[i].move}** and dealt **${history[i].damage}** damage!`;
                             if (i !== history.length - 1) history_text += "\n";
                         }
 
@@ -520,14 +572,28 @@ client.on(Events.InteractionCreate, async interaction => {
                     }
                 }
 
-                const moves = require(`../data/moves.json`)
 
                 // =================
                 // Get move details
 
+                const MOVES_MODEL = require('../schemas/move.js')
+                // const moves = require(`../data/moves.json`)
 
                 let move_data, rank = my_char.rank[1];
-                for (let i = 0; i < moves[`rank_${rank}`].length; i++) if (moves[`rank_${rank}`][i].short === move) move_data = moves[`rank_${rank}`][i];
+                // for (let i = 0; i < moves[`rank_${rank}`].length; i++) {
+                //     if (moves[`rank_${rank}`][i].short === move) {
+                //         move_data = moves[`rank_${rank}`][i];
+                //     }
+                // }
+
+                move_data = await MOVES_MODEL.findOne({short: move, rank: rank})
+
+                if (!move_data) {
+                    return await interaction.reply({
+                        content: `That move doesn't exist (or I did an oopsie)`,
+                        ephemeral: true
+                    });
+                }
 
                 // =================
                 // Calculate damage
@@ -535,10 +601,31 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 const
                     damage_range = move_data.damage_level,
-                    damage_ranges = moves.damage_ranges[`level_${damage_range}`],
+                    damage_ranges = {
+                        "level_1": {
+                            "min": 1,
+                            "max": 9
+                        },
+                        "level_2": {
+                            "min": 5,
+                            "max": 11
+                        },
+                        "level_3": {
+                            "min": 9,
+                            "max": 13
+                        },
+                        "level_4": {
+                            "min": 13,
+                            "max": 17
+                        },
+                        "level_5": {
+                            "min": 17,
+                            "max": 21
+                        }
+                    },
                     damage = Math.floor(Math.random() * (damage_ranges.max - damage_ranges.min + 1)) + damage_ranges.min,
-                    injury = move_data.possible_injuries[Math.floor(Math.random() * move_data.possible_injuries.length)],
-                    success_rate = move_data.success_rate, // scale of 1 - 3 (1 = high, 3 = low)
+                    // injury = move_data.possible_injuries[Math.floor(Math.random() * move_data.possible_injuries.length)],
+                    success_rate = move_data.success_rate,
                     success = Math.floor(Math.random() * success_rate) === 0;
 
                 // =================
@@ -549,11 +636,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                     // If the move was successful, do the thing
                     interaction.reply({
-                        content: move_data.fail_text[Math.floor(Math.random() * move_data.fail_text.length)]
-                            .replace("<self>", my_char.name)
-                            .replace("<opponent>", opponent_char.name)
-                            .replace("<damage>", damage)
-                            .replace("<injury>", injury),
+                        content: `${my_char.name} tried to use **${move_data.name}** but failed!`,
                         ephemeral: false
                     });
 
@@ -565,11 +648,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
                     // If the move was successful, do the thing
                     interaction.reply({
-                        content: move_data.action_text[Math.floor(Math.random() * move_data.action_text.length)]
-                            .replace("<self>", `**${my_char.name}**`)
-                            .replace("<opponent>", `**${opponent_char.name}**`)
-                            .replace("<damage>", `**${damage}**`)
-                            .replace("<injury>", `**${injury}**`),
+                        content: `${my_char.name} used **${move_data.name}** and dealt **${damage}** damage!`,
                         ephemeral: false
                     });
 
@@ -581,9 +660,12 @@ client.on(Events.InteractionCreate, async interaction => {
                 if (my_data.userID === fight_data.player1.userID) fight_data.player2.character = opponent_char;
                 else fight_data.player1.character = opponent_char;
 
+                await interaction.channel.send({
+                    content: `DEBUG | ${opponent_char.name}'s health: ${opponent_char.health[0]} - <= 0: ${opponent_char.health[0] <= 0} - isSpar: ${isSpar} - opponent_char.health[0] <= 60: ${opponent_char.health[0] <= 60}`
+                })
+
                 // Check if opponent is dead
                 if (opponent_char.health[0] <= 0 || isSpar && opponent_char.health[0] <= 60) {
-
                     // If so, end the fight
                     await interaction.followUp({
                         content: `${opponent_char.name} has been defeated!`,
@@ -611,7 +693,7 @@ client.on(Events.InteractionCreate, async interaction => {
                             "turn": [my_char.name, opponent_char.name],
                             "move": move,
                             "damage": damage,
-                            "injury": injury,
+                            // "injury": injury,
                             "success": success
                         };
 
@@ -624,7 +706,7 @@ client.on(Events.InteractionCreate, async interaction => {
                     let history_text = "";
 
                     for (let i = 0; i < history.length; i++) {
-                        history_text += `${i + 1}. **${history[i].turn[0]}** used **${history[i].move}** and dealt **${history[i].damage}** damage, causing **${history[i].injury}**!`;
+                        history_text += `${i + 1}. **${history[i].turn[0]}** used **${history[i].move}** and dealt **${history[i].damage}** damage!`;
                         if (i !== history.length - 1) history_text += "\n";
                     }
 
@@ -689,7 +771,6 @@ client.on(Events.InteractionCreate, async interaction => {
                         "turn": [my_char.name, opponent_char.name],
                         "move": move,
                         "damage": damage,
-                        "injury": injury,
                         "success": success
                     };
 
@@ -698,14 +779,12 @@ client.on(Events.InteractionCreate, async interaction => {
                 await fight_data.markModified("history");
                 await fight_data.save();
 
-                // make it human readable
+                // make it human-readable
                 let history_text = "";
-
                 for (let i = 0; i < history.length; i++) {
-                    history_text += `${i + 1}. **${history[i].turn[0]}** used **${history[i].move}** and dealt **${history[i].damage}** damage, causing **${history[i].injury}**!`;
+                    history_text += `${i + 1}. **${history[i].turn[0]}** used **${history[i].move}** and dealt **${history[i].damage}** damage!`;
                     if (i !== history.length - 1) history_text += "\n";
                 }
-
                 return await interaction.followUp({content: `# History \n${history_text}`});
 
             }

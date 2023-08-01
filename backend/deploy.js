@@ -10,8 +10,6 @@ const
 
 // For each directory in project_dir/COMMANDS
 FS.readdirSync('commands').forEach(dir => {
-
-    // Loop through each file in the directory
     FS.readdirSync(`commands/${dir}`).forEach(file => {
         if (!file.endsWith('.js')) return;
         console.log(`Loading command ${file} from ${dir}`)
