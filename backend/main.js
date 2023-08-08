@@ -210,7 +210,6 @@ client.on(Events.ClientReady, async () => {
     await mongoose.connection.on(`connected`, () => {
         console.log(`Connected to MongoDB`);
         console.log("========================================");
-        damageCharacter("BeauTheBeau", "729567972070391848")
     });
 });
 client.on(Events.InteractionCreate, async interaction => {
@@ -256,7 +255,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 console.log("========================================");
             }
 
-            // optOut
+            // opt in/out
             if (interaction.customId === "optOut") {
 
                 // check if the setting exists
@@ -279,8 +278,6 @@ client.on(Events.InteractionCreate, async interaction => {
                     components: [row]
                 });
             }
-
-            // optIn
             if (interaction.customId === "optIn") {
                 profile_data.settings.optOut = false;
                 await profile_data.save();
@@ -328,8 +325,6 @@ client.on(Events.InteractionCreate, async interaction => {
                     isSpar = interaction.customId.split(`&`)[1].split(`=`)[1] === `true`,
                     type = isSpar ? `spar` : `fight`;
 
-
-                console.log(isSpar)
 
                 try {
                     fight_data = await fightModel.findOne({combatID: fightID});
@@ -579,14 +574,15 @@ client.on(Events.InteractionCreate, async interaction => {
                 const MOVES_MODEL = require('../schemas/move.js')
                 // const moves = require(`../data/moves.json`)
 
-                let move_data, rank = my_char.rank[1];
-                // for (let i = 0; i < moves[`rank_${rank}`].length; i++) {
-                //     if (moves[`rank_${rank}`][i].short === move) {
-                //         move_data = moves[`rank_${rank}`][i];
-                //     }
-                // }
+                let move_data; let rank = my_char.rank[1];
 
-                move_data = await MOVES_MODEL.findOne({short: move, rank: rank})
+                for (let i = 1; i < rank; i++) {
+                    const curmove = await MOVES_MODEL.findOne({name: move, rank: i});
+                    if (curmove) {
+                        move_data = curmove;
+                        break;
+                    }
+                }
 
                 if (!move_data) {
                     return await interaction.reply({

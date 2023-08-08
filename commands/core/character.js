@@ -85,7 +85,8 @@ module.exports = {
         try {
             if (interaction.options.getUser('user').id !== undefined) USER_ID = interaction.options.getUser('user').id;
         } catch (error) {
-
+            console.log(error);
+            await interaction.reply({ content: `:negative_squared_cross_mark: Invalid arguments`, ephemeral: true });
         }
 
         const
@@ -209,7 +210,7 @@ module.exports = {
                     EMBED = new DISCORD.EmbedBuilder()
                         .setTitle(`Character List`)
                         .setTimestamp()
-                        .setDescription(`Active character: ${CHARACTERS.active}\n\n${CHARACTER_LIST.map((character, index) => `${index + 1}. ${character}`).join('\n')}`);
+                        .setDescription(`Active character: ${CHARACTERS.active}\n${CHARACTER_LIST.map((character, index) => index === 0 ? '' : `${index}. ${character}`).join('\n')}`);
 
                 await interaction.reply({
                     ephemeral: false,
@@ -227,19 +228,15 @@ module.exports = {
         }
         else if (SUBCOMMAND === "info") {
 
-
             if (!CHARACTERS[NAME]) return interaction.reply({
                 content: `:negative_squared_cross_mark: You don't have a character with that name`,
                 ephemeral: true
             });
 
             // Check if the character XP is enough to level up using rank_thresholds
-
             const CHARACTER = CHARACTERS[NAME];
-            console.log(CHARACTERS[NAME].rank)
             const rank_thresholds = [200, 400, 800, 1100, 1400];
             for (let index = rank_thresholds.length - 1; index >= 0; index--) {
-                // Check if the character's rank is already that rank
 
                 await interaction.channel.send({
                     content: `Comparing R${CHARACTERS[NAME].rank[1]} (${CHARACTERS[NAME].rank[0]} XP) to R${index + 1} (${rank_thresholds[index]} XP)`
@@ -250,9 +247,6 @@ module.exports = {
                 // Check if the character's CXP is greater than the threshold
                 if (CHARACTERS[NAME].rank[0] >= rank_thresholds[index]) {
                     CHARACTERS[NAME].rank[1] = index + 1;
-                    await interaction.channel.send({
-                        content: `Congratulations, ${NAME}! You have leveled up to rank ${index + 1}!`
-                    });
                     await PROFILE_MODEL.findOneAndUpdate({userID: USER_ID}, {characters: CHARACTERS});
                     break;
                 }

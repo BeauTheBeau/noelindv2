@@ -5,7 +5,7 @@ const
     MONGOOSE = require('mongoose'),
     PROFILE_MODEL = require('../../schemas/profile.js'),
     FIGHT_MODEL = require('../../schemas/fight.js'),
-    MOVES = require('../../data/moves.json');
+    MOVE_MODEL = require('../../schemas/move.js');
 
 
 module.exports = {
@@ -33,6 +33,8 @@ module.exports = {
 
 
     async execute(interaction) {
+
+        await interaction.deferReply();
 
         const
             USER_ID = interaction.user.id,
@@ -71,17 +73,17 @@ module.exports = {
         // Loop through all fights (dictionary) and check if either of the users are in a fight
         // If they are, return an error
         // If they aren't, create a new fight
-
+        //
         for (const FIGHT of await FIGHT_MODEL.find()) {
             if (FIGHT.player1.userID === USER_ID || FIGHT.player2.userID === USER_ID) {
-                if (FIGHT.winner === null) return interaction.reply({
+                if (FIGHT.winner === null) return interaction.editReply({
                     content: `You are already in a ${TYPE}!`,
                     ephemeral: true
                 });
             }
 
             if (FIGHT.player1.userID === OPPONENT_ID || FIGHT.player2.userID === OPPONENT_ID) {
-                if (FIGHT.winner === null) return interaction.reply({
+                if (FIGHT.winner === null) return interaction.editReply({
                     content: `That user is already in a ${TYPE}!`,
                     ephemeral: true
                 });
@@ -192,53 +194,21 @@ module.exports = {
             ]
 
         let ALL_MOVES = []
+        for (const MOVE of await MOVE_MODEL.find()) {
 
-        for (let RANK in MOVES) {
+            console.log(MOVE)
 
-            if (RANK === "success" || RANK === "damage_ranges") continue;
+            let MOVE_BUTTON = await new DISCORD.ButtonBuilder()
+                .setLabel(MOVE.name)
+                .setCustomId(`f:${MOVE.name}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
+                .setStyle(DISCORD.ButtonStyle.Primary)
 
-            let move_short, move_long;
+            if (MOVE.rank === 1) RANK_1_BUTTONS.push(MOVE_BUTTON)
+            if (MOVE.rank === 2) RANK_2_BUTTONS.push(MOVE_BUTTON)
+            if (MOVE.rank === 3) RANK_3_BUTTONS.push(MOVE_BUTTON)
+            if (MOVE.rank === 4) RANK_4_BUTTONS.push(MOVE_BUTTON)
+            if (MOVE.rank === 5) RANK_5_BUTTONS.push(MOVE_BUTTON)
 
-            // RANK is an array of moves
-            for (let MOVE of MOVES[RANK]) {
-
-                move_short = MOVE.short
-                move_long = MOVE.name
-                const ID = `f:${move_short}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`
-
-                // Check for the ID in ALL MOVES
-                for (let i = 0; i < ALL_MOVES.length; i++) if (ALL_MOVES[i].id === ID) MOVES[RANK].splice(i, 1)
-
-                ALL_MOVES.push(ID)
-
-                const
-                    buttonPromise = new Promise(async (resolve, reject) => {
-                        const BUTTON = await new DISCORD.ButtonBuilder()
-                            .setCustomId(`f:${move_short}&?f=${COMBAT_ID}&isSpar=${IS_SPAR}`)
-                            .setLabel(`${move_long}`)
-                            .setStyle(DISCORD.ButtonStyle.Primary);
-                        resolve(BUTTON);
-                    });
-
-                // Check for any disabled moves
-                switch (RANK) {
-                    case "rank_1":
-                        RANK_1_BUTTONS.push(await buttonPromise);
-                        break;
-                    case "rank_2":
-                        RANK_2_BUTTONS.push(await buttonPromise);
-                        break;
-                    case "rank_3":
-                        RANK_3_BUTTONS.push(await buttonPromise);
-                        break;
-                    case "rank_4":
-                        RANK_4_BUTTONS.push(await buttonPromise);
-                        break;
-                    case "rank_5":
-                        RANK_5_BUTTONS.push(await buttonPromise);
-                        break;
-                }
-            }
         }
 
 
@@ -276,7 +246,7 @@ module.exports = {
         );
 
         // Link to the thread
-        await interaction.reply({
+        await interaction.editReply({
             content: `Created a thread for the ${TYPE}: <#${THREAD_ID}>`,
             ephemeral: true
         });
