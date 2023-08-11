@@ -29,7 +29,7 @@
   },
   "rank_1": [
     {
-      "short": "basic_bite",
+      "short": "Basic Bite",
       "name": "Basic Bite",
       "possible_injuries": [
         "Minor bite wound",
@@ -49,7 +49,7 @@
       "success_rate": 2
     },
     {
-      "short": "basic_claw",
+      "short": "Basic Claw",
       "name": "Basic Claw",
       "possible_injuries": [
         "Minor scratch",
@@ -70,7 +70,7 @@
     },
     {
       "name": "Frontal Blow",
-      "short": "frontal_blow",
+      "short": "Frontal Blow",
       "description": "The user swipes at an opponent with one of their forepaws.",
       "possible_injuries": [
         "Minor cuts",
@@ -92,7 +92,7 @@
   ],
   "rank_2": [
     {
-      "short": "tackle",
+      "short": "Tackle",
       "name": "Tackle",
       "possible_injuries": [
         "Minor bruising",
@@ -114,7 +114,7 @@
       "success_rate": 3
     },
     {
-      "short": "throw",
+      "short": "Throw",
       "name": "Throw",
       "possible_injuries": [
         "Minor bruising",
@@ -137,7 +137,7 @@
     },
     {
       "name": "Basic Kick",
-      "short": "basic_kick",
+      "short": "Basic Kick",
       "description": "The user kicks at an opponent with one of their hind legs.",
       "possible_injuries": [
         "Minor bruising",
@@ -159,7 +159,7 @@
     },
     {
       "name": "Rearing Strike",
-      "short": "rearing_strike",
+      "short": "Rearing Strike",
       "description": "The user rears up on their hind legs and uses their weight to strike downwards at an opponent's face.",
       "possible_injuries": [
         "Minor bruising",
@@ -185,7 +185,7 @@
   ],
   "rank_3": [
     {
-      "short": "biteshake",
+      "short": "Bite n' Shake",
       "name": "Bite n' Shake",
       "possible_injuries": [
         "Minor bite wound",

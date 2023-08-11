@@ -86,7 +86,6 @@ module.exports = {
             if (interaction.options.getUser('user').id !== undefined) USER_ID = interaction.options.getUser('user').id;
         } catch (error) {
             console.log(error);
-            await interaction.reply({ content: `:negative_squared_cross_mark: Invalid arguments`, ephemeral: true });
         }
 
         const
