@@ -86,7 +86,7 @@ module.exports = {
                 .setColor(0x00FF00)
                 .setTimestamp();
 
-            return interaction.reply({embeds: [EMBED], ephemeral: true});
+            return interaction.reply({embeds: [EMBED], ephemeral: false});
         }
 
         else if (SUBCOMMAND === 'inventory') {
