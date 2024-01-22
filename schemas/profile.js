@@ -8,6 +8,14 @@ const profileSchema = new mongoose.Schema({
     inventory: {type: Object, default: {}},
     combat: {type: Object, default: {active: false, combatID: null}},
     settings: {type: Object, default: {optOut: false}},
+    sparCount: {
+        type: Number,
+        default: 0
+    },
+    lastSparDate: {
+        type: Date,
+        default: null
+    }
 });
 
 const model = mongoose.model('ProfileModels', profileSchema);
