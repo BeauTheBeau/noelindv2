@@ -326,6 +326,24 @@ client.on(Events.InteractionCreate, async interaction => {
                     type = isSpar ? `spar` : `fight`;
 
 
+                if (type === "spar") {
+
+                    const today = new Date();
+                    if (opponent_data.lastSparDate && opponent_data.lastSparDate.toDateString() === today.toDateString()) {
+                        if (opponent_data.sparCount >= 2) {
+                            await interaction.reply({
+                                content: 'You cannot spar more than twice per day.',
+                                ephemeral: true
+                            });
+                            return;
+                        }
+                    } else {
+                        opponent_data.sparCount = 0;
+                        opponent_data.lastSparDate = today;
+                    }
+
+                }
+
                 try {
                     fight_data = await fightModel.findOne({combatID: fightID});
                 } catch (err) {
@@ -585,7 +603,7 @@ client.on(Events.InteractionCreate, async interaction => {
                 }
 
                 if (!move_data) {
-                    return await interaction.reply({
+                    return interaction.reply({
                         content: `That move doesn't exist (or I did an oopsie)`,
                         ephemeral: true
                     });
@@ -737,6 +755,16 @@ client.on(Events.InteractionCreate, async interaction => {
 
                 my_profile.characters[my_char.name] = my_char;
                 opponent_model.characters[opponent_char.name] = opponent_char;
+
+                if (type === "spar") {
+                    opponent_data.sparCount += 1;
+                    await opponent_data.save();
+                    opponent_profile = await profileModel.findOne({userID: opponent_data.userID});
+                    opponent_profile.characters[opponent_char.name] = opponent_char;
+                    await opponent_profile.markModified(`characters.${opponent_char.name}.stats`);
+                    await opponent_profile.markModified(`characters.${opponent_char.name}.last`);
+                    await opponent_profile.save();
+                }
 
                 await my_profile.markModified("characters." + my_char.name);
                 await my_profile.save();
